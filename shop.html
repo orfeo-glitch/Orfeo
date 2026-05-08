@@ -422,7 +422,6 @@
 /* ── DATA ── */
 const DB_KEY = 'orfeo_db';
 
-// Fallback hardcoded products if no admin data
 const fallbackProducts = [
   { id:1, nombre:"Sweater Rayado Marron", precio:30000, img:"product-1.png", categoria:"sweater", stock:true, destacado:true, descripcion:"" },
   { id:2, nombre:"Sweater Azul Splash",   precio:40000, img:"product-2.png", categoria:"sweater", stock:true, destacado:true, descripcion:"" },
@@ -433,21 +432,28 @@ const fallbackProducts = [
 let allProducts = [];
 let currentFilter = 'all';
 
-function loadProducts() {
-  try {
-    const db = JSON.parse(localStorage.getItem(DB_KEY) || 'null');
-    allProducts = (db && db.products && db.products.length > 0) ? db.products : fallbackProducts;
+async function loadProducts() {
+  let db = null;
 
-    // Apply settings to footer
-    if (db && db.settings) {
-      const s = db.settings;
-      if (s.email)     { const el = document.getElementById('lnk-email'); el.href = 'mailto:'+s.email; el.textContent = s.email; }
-      if (s.instagram && s.instagram !== '#') document.getElementById('lnk-ig').href = s.instagram;
-      if (s.tiktok    && s.tiktok !== '#')    document.getElementById('lnk-tk').href = s.tiktok;
-      if (s.whatsapp  && s.whatsapp !== '#')  document.getElementById('lnk-wa').href = 'https://wa.me/' + s.whatsapp.replace(/\D/g,'');
-    }
-  } catch(e) {
-    allProducts = fallbackProducts;
+  // 1. Intentar API
+  try {
+    const res = await fetch('/api/entries');
+    if (res.ok) db = await res.json();
+  } catch(e) {}
+
+  // 2. Fallback: localStorage
+  if (!db) {
+    try { db = JSON.parse(localStorage.getItem(DB_KEY) || 'null'); } catch(e) {}
+  }
+
+  allProducts = (db && db.products && db.products.length > 0) ? db.products : fallbackProducts;
+
+  if (db && db.settings) {
+    const s = db.settings;
+    if (s.email)    { const el = document.getElementById('lnk-email'); el.href = 'mailto:'+s.email; el.textContent = s.email; }
+    if (s.instagram && s.instagram !== '#') document.getElementById('lnk-ig').href = s.instagram;
+    if (s.tiktok    && s.tiktok !== '#')    document.getElementById('lnk-tk').href = s.tiktok;
+    if (s.whatsapp  && s.whatsapp !== '#')  document.getElementById('lnk-wa').href = 'https://wa.me/' + s.whatsapp.replace(/\D/g,'');
   }
 }
 
@@ -516,8 +522,11 @@ if (urlFilter) {
 }
 
 /* ── INIT ── */
-loadProducts();
-renderProducts();
+async function boot() {
+  await loadProducts();
+  renderProducts();
+}
+boot();
 </script>
 </body>
 </html>

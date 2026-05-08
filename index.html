@@ -597,7 +597,7 @@
     <a href="#" class="nav-link">Back to Basics</a>
   </div>
   <div class="nav-right">
-    <a href="shop.html" class="nav-link">Shop</a>
+    <a href="#shop" class="nav-link">Shop</a>
     <div class="nav-search">
       <svg class="search-icon" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
@@ -720,7 +720,7 @@
     <div>
       <p class="footer-col-title">Shop</p>
       <div class="footer-col-links">
-        <a href="shop.html" class="footer-col-link">Destacados</a>
+        <a href="#shop" class="footer-col-link">Destacados</a>
         <a href="#" class="footer-col-link">Nuevos ingresos</a>
         <a href="#" class="footer-col-link">Sweaters</a>
         <a href="#" class="footer-col-link">Accesorios</a>
@@ -729,10 +729,10 @@
     <div>
       <p class="footer-col-title">Info</p>
       <div class="footer-col-links">
-        <a href="about.html" class="footer-col-link">Sobre Orfeo</a>
-        <a href="shipping.html" class="footer-col-link">Envíos</a>
-        <a href="returns.html" class="footer-col-link">Cambios y devoluciones</a>
-        <a href="terms.html" class="footer-col-link">Términos</a>
+        <a href="#" class="footer-col-link">Sobre Orfeo</a>
+        <a href="#" class="footer-col-link">Envíos</a>
+        <a href="#" class="footer-col-link">Cambios y devoluciones</a>
+        <a href="#" class="footer-col-link">Términos</a>
       </div>
     </div>
     <div>
@@ -763,6 +763,73 @@
   window.addEventListener('scroll', () => {
     nav.classList.toggle('scrolled', window.scrollY >= window.innerHeight);
   }, { passive: true });
+
+  /* ── SYNC DESDE ADMIN (/api/entries + localStorage fallback) ── */
+  (async function() {
+    let db = null;
+
+    // 1. Intentar API
+    try {
+      const res = await fetch('/api/entries');
+      if (res.ok) db = await res.json();
+    } catch(e) {}
+
+    // 2. Fallback: localStorage
+    if (!db) {
+      try { db = JSON.parse(localStorage.getItem('orfeo_db') || 'null'); } catch(e) {}
+    }
+
+    if (!db) return;
+
+    // Productos destacados en el grid del inicio
+    if (db.products && db.products.length > 0) {
+      const destacados = db.products.filter(p => p.destacado);
+      if (destacados.length > 0) {
+        const grid = document.querySelector('.shop-grid');
+        if (grid) {
+          grid.innerHTML = destacados.map(p => `
+            <div class="product-card">
+              <div class="product-img">
+                <img src="${p.img}" alt="${p.nombre}" onerror="this.style.display='none'">
+              </div>
+              <span class="product-name">${p.nombre}</span>
+              <span class="product-price">$${Number(p.precio).toLocaleString('es-AR')}</span>
+            </div>
+          `).join('');
+        }
+      }
+    }
+
+    // Drop / Hero section
+    if (db.drop) {
+      const d = db.drop;
+      const season = document.querySelector('.drop-season');
+      const title  = document.querySelector('.drop-title');
+      const sub    = document.querySelector('.drop-sub');
+      const video  = document.querySelector('.drop-video');
+      if (season) season.textContent = d.temporada;
+      if (title)  title.textContent  = d.titulo;
+      if (sub)    sub.textContent    = d.subtitulo;
+      if (video && d.videoUrl) video.src = d.videoUrl;
+    }
+
+    // Footer: redes y contacto
+    if (db.settings) {
+      const s = db.settings;
+      if (s.email) {
+        document.querySelectorAll('a[href^="mailto:"]').forEach(el => {
+          el.href = 'mailto:' + s.email;
+          if (el.textContent.includes('@')) el.textContent = s.email;
+        });
+      }
+      if (s.instagram && s.instagram !== '#')
+        document.querySelectorAll('a.footer-col-link').forEach(el => { if (el.textContent.trim() === 'Instagram') el.href = s.instagram; });
+      if (s.tiktok && s.tiktok !== '#')
+        document.querySelectorAll('a.footer-col-link').forEach(el => { if (el.textContent.trim() === 'TikTok') el.href = s.tiktok; });
+      if (s.whatsapp && s.whatsapp !== '#')
+        document.querySelectorAll('a.footer-col-link').forEach(el => { if (el.textContent.trim() === 'WhatsApp') el.href = 'https://wa.me/' + s.whatsapp.replace(/\D/g,''); });
+    }
+  })();
 </script>
 
 </body>

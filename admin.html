@@ -707,6 +707,35 @@ input,textarea,select{font-family:var(--font);}
 
 <script>
 /* ════════════════════════════════════════
+   API  →  /api/entries  (Vercel KV)
+════════════════════════════════════════ */
+async function fetchFromApi() {
+  try {
+    const res = await fetch('/api/entries');
+    if (!res.ok) throw new Error('API ' + res.status);
+    return await res.json();
+  } catch(e) {
+    console.warn('API fetch failed:', e.message);
+    return null;
+  }
+}
+
+async function pushToApi(data) {
+  try {
+    await fetch('/api/entries', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + PASS
+      },
+      body: JSON.stringify(data)
+    });
+  } catch(e) {
+    console.warn('API push failed:', e.message);
+  }
+}
+
+/* ════════════════════════════════════════
    DB
 ════════════════════════════════════════ */
 const DB_KEY = 'orfeo_db';
@@ -725,14 +754,26 @@ const defaultDb = {
 
 let db;
 
-function loadDb() {
+async function loadDb() {
+  // 1. Intentar API (Vercel KV — fuente real)
+  const remote = await fetchFromApi();
+  if (remote) {
+    db = remote;
+    if (!db.products) db.products = [];
+    if (!db.drop)     db.drop     = defaultDb.drop;
+    if (!db.settings) db.settings = defaultDb.settings;
+    if (!db.nextId)   db.nextId   = db.products.length + 1;
+    localStorage.setItem(DB_KEY, JSON.stringify(db));
+    return;
+  }
+  // 2. Fallback: localStorage (modo offline / local)
   try {
     const raw = localStorage.getItem(DB_KEY);
     db = raw ? JSON.parse(raw) : JSON.parse(JSON.stringify(defaultDb));
     if (!db.products) db.products = [];
-    if (!db.drop) db.drop = defaultDb.drop;
+    if (!db.drop)     db.drop     = defaultDb.drop;
     if (!db.settings) db.settings = defaultDb.settings;
-    if (!db.nextId) db.nextId = db.products.length + 1;
+    if (!db.nextId)   db.nextId   = db.products.length + 1;
   } catch(e) {
     db = JSON.parse(JSON.stringify(defaultDb));
   }
@@ -740,6 +781,7 @@ function loadDb() {
 
 function saveDb() {
   localStorage.setItem(DB_KEY, JSON.stringify(db));
+  pushToApi(db); // sincroniza con Vercel KV en segundo plano
 }
 
 /* ════════════════════════════════════════
@@ -1079,8 +1121,9 @@ function fmtPrice(n) {
 /* ════════════════════════════════════════
    INIT
 ════════════════════════════════════════ */
-function init() {
-  loadDb();
+async function init() {
+  showToast('Cargando datos…');
+  await loadDb();
   renderDash();
   renderProductsList();
   showView('list');
