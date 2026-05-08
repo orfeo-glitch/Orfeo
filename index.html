@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orfeo</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #f0ede6;
+    --dark:      #0d0d0d;
+    --white:     #ffffff;
+    --muted:     rgba(255, 255, 255, 0.5);
+    --overlay:   rgba(13, 13, 13, 0.28);
+    --nav-h:     52px;
+    --font-sans: 'DM Sans', sans-serif;
+  }
+
+  html, body { height: 100%; overscroll-behavior: none; }
+
+  body {
+    background: var(--bg);
+    color: var(--dark);
+    font-family: var(--font-sans);
+    overflow-x: hidden;
+  }
+
+  /* ── NAVBAR ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    height: var(--nav-h);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 36px;
+    transition: background 0.35s ease, border-bottom 0.35s ease;
+  }
+
+  nav.scrolled {
+    background: var(--bg);
+    border-bottom: 0.5px solid rgba(13,13,13,0.12);
+  }
+
+  .nav-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .nav-link {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--white);
+    text-decoration: none;
+    opacity: 0.8;
+    transition: color 0.35s ease, opacity 0.2s ease;
+  }
+  .nav-link:hover { opacity: 0.5; }
+  nav.scrolled .nav-link { color: var(--dark); }
+
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .nav-search {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-bottom: 0.5px solid var(--muted);
+    padding-bottom: 3px;
+    transition: border-color 0.35s ease;
+  }
+  nav.scrolled .nav-search { border-color: rgba(13,13,13,0.2); }
+
+  .nav-search input {
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: var(--font-sans);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--white);
+    width: 110px;
+    transition: color 0.35s ease;
+  }
+  nav.scrolled .nav-search input { color: var(--dark); }
+  .nav-search input::placeholder { color: var(--muted); }
+  nav.scrolled .nav-search input::placeholder { color: rgba(13,13,13,0.35); }
+
+  .search-icon { flex-shrink: 0; opacity: 0.6; }
+  nav.scrolled .search-icon { filter: brightness(0); }
+
+  .nav-cart {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--white);
+    cursor: pointer;
+    opacity: 0.8;
+    transition: color 0.35s ease;
+  }
+  nav.scrolled .nav-cart { color: var(--dark); }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    background: #1a1a17;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 25%;
+    filter: saturate(0.75) brightness(0.9);
+  }
+
+  .hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: var(--overlay);
+    z-index: 1;
+  }
+
+  /* ── CONTENIDO HERO — centrado en pantalla ── */
+  .hero-center {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* grupo interno: logo + meta lado a lado, ancho completo */
+  .hero-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0 40px;
+  }
+
+  .hero-logo {
+    width: clamp(140px, 16vw, 220px);
+    height: auto;
+    filter: brightness(0) invert(1);
+    display: block;
+  }
+
+  /* divisor vertical entre logo y textos */
+  .hero-divider {
+    width: 0.5px;
+    height: 52px;
+    background: rgba(255,255,255,0.25);
+    flex-shrink: 0;
+  }
+
+  /* textos: B2B. / Buenos Aires, Argentina / Est. 2026 en fila */
+  .hero-meta {
+    display: flex;
+    align-items: center;
+    gap: 36px;
+  }
+
+  .hero-meta-item {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 300;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.6);
+  }
+
+  .hero-tagline {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    color: rgba(255,255,255,0.9);
+  }
+
+  /* ── SCROLL STACK ── */
+  .scroll-stack {
+    position: relative;
+    height: 200vh;
+  }
+
+  .hero {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  /* ── DROP SS2026 ── */
+  .drop {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    background: var(--dark);
+  }
+
+  .drop-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.6;
+  }
+
+  .drop-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(13,13,13,0.45);
+    z-index: 1;
+  }
+
+  .drop-content {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 52px 40px;
+    gap: 12px;
+  }
+
+  .drop-season {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 300;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.45);
+  }
+
+  .drop-title {
+    font-family: var(--font-sans);
+    font-size: clamp(40px, 6vw, 72px);
+    font-weight: 500;
+    color: var(--white);
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+
+  .drop-sub {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.55);
+    letter-spacing: 0.02em;
+    margin-top: 4px;
+  }
+
+  .drop-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 16px;
+    padding: 12px 24px;
+    border: 0.5px solid rgba(255,255,255,0.35);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--white);
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    width: fit-content;
+    transition: background 0.25s ease, border-color 0.25s ease;
+  }
+  .drop-btn:hover {
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.6);
+  }
+  .drop-btn svg { flex-shrink: 0; }
+
+  /* ── SHOP ── */
+  .shop {
+    background: var(--bg);
+    padding: 80px 40px;
+  }
+
+  .shop-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 40px;
+  }
+
+  .shop-title {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--dark);
+  }
+
+  .shop-link {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 300;
+    letter-spacing: 0.06em;
+    color: rgba(13,13,13,0.4);
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+  .shop-link:hover { color: var(--dark); }
+
+  .shop-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+
+  .product-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    cursor: pointer;
+  }
+
+  .product-img {
+    width: 100%;
+    aspect-ratio: 3/4;
+    background: #e0ddd6;
+    overflow: hidden;
+  }
+
+  .product-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.5s ease;
+  }
+  .product-card:hover .product-img img { transform: scale(1.03); }
+
+  .product-name {
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--dark);
+    letter-spacing: 0.01em;
+  }
+
+  .product-price {
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 300;
+    color: rgba(13,13,13,0.5);
+  }
+
+  /* ── CONTACT ── */
+  .contact {
+    background: var(--dark);
+    padding: 100px 40px 80px;
+  }
+
+  .contact-title {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+    margin-bottom: 52px;
+  }
+
+  .contact-form {
+    display: flex;
+    flex-direction: column;
+    max-width: 600px;
+  }
+
+  .contact-field {
+    border-bottom: 0.5px solid rgba(255,255,255,0.1);
+    padding: 20px 0;
+  }
+
+  .contact-field input,
+  .contact-field textarea {
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 300;
+    color: var(--white);
+    letter-spacing: 0.02em;
+    resize: none;
+    width: 100%;
+  }
+
+  .contact-field input::placeholder,
+  .contact-field textarea::placeholder {
+    color: rgba(255,255,255,0.25);
+  }
+
+  .contact-field textarea { min-height: 100px; }
+
+  .contact-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 36px;
+    padding: 12px 24px;
+    border: 0.5px solid rgba(255,255,255,0.3);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--white);
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    width: fit-content;
+    transition: background 0.25s ease, border-color 0.25s ease;
+  }
+  .contact-btn:hover {
+    background: rgba(255,255,255,0.07);
+    border-color: rgba(255,255,255,0.55);
+  }
+  .contact-btn svg { flex-shrink: 0; }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--dark);
+    border-top: 0.5px solid rgba(255,255,255,0.08);
+    padding: 60px 40px 32px;
+  }
+
+  .footer-index {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 40px;
+    margin-bottom: 52px;
+  }
+
+  .footer-col-title {
+    font-family: var(--font-sans);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+    margin-bottom: 16px;
+  }
+
+  .footer-col-links {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .footer-col-link {
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.5);
+    text-decoration: none;
+    letter-spacing: 0.02em;
+    transition: color 0.2s ease;
+  }
+  .footer-col-link:hover { color: var(--white); }
+
+  .footer-bottom {
+    border-top: 0.5px solid rgba(255,255,255,0.06);
+    padding-top: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .footer-copy {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.2);
+    letter-spacing: 0.03em;
+  }
+
+  .footer-logo {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    color: rgba(255,255,255,0.2);
+    text-transform: uppercase;
+  }
+
+  /* ── RESPONSIVE MOBILE ── */
+  @media (max-width: 768px) {
+
+    /* navbar */
+    nav { padding: 0 20px; }
+    .nav-search { display: none; }
+
+    /* hero */
+    .hero-group {
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 0 24px;
+      text-align: center;
+    }
+    .hero-logo {
+      width: clamp(120px, 40vw, 180px);
+    }
+    .hero-meta {
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* drop */
+    .drop-content {
+      padding: 40px 24px;
+    }
+    .drop-title {
+      font-size: clamp(32px, 10vw, 52px);
+    }
+
+    /* shop */
+    .shop {
+      padding: 60px 20px;
+    }
+    .shop-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    /* contact */
+    .contact {
+      padding: 60px 20px 60px;
+    }
+    .contact-form {
+      max-width: 100%;
+    }
+
+    /* footer */
+    footer {
+      padding: 48px 20px 28px;
+    }
+    .footer-index {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 32px;
+      margin-bottom: 40px;
+    }
+    .footer-bottom {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .shop-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .footer-index {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── NAVBAR ── -->
+<nav id="navbar">
+  <div class="nav-left">
+    <a href="#" class="nav-link">Back to Basics</a>
+  </div>
+  <div class="nav-right">
+    <a href="shop.html" class="nav-link">Shop</a>
+    <div class="nav-search">
+      <svg class="search-icon" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" placeholder="Buscar">
+    </div>
+    <span class="nav-cart">Carrito: 0</span>
+  </div>
+</nav>
+
+<!-- ── SCROLL STACK ── -->
+<div class="scroll-stack">
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <img class="hero-bg" src="background.png" draggable="false">
+  <div class="hero-overlay"></div>
+
+  <div class="hero-center">
+    <div class="hero-group">
+
+      <img
+        class="hero-logo"
+        src="logo.png"
+        alt="Orfeo"
+        onerror="this.style.display='none'"
+      >
+
+      <div class="hero-meta">
+        <span class="hero-tagline">B2B.</span>
+        <span class="hero-meta-item">Buenos Aires, Argentina</span>
+        <span class="hero-meta-item">Est. 2026</span>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── DROP SS2026 ── -->
+<section class="drop">
+  <!-- reemplazar con <video src="drop.mp4"> cuando tengas el video -->
+  <video class="drop-video" src="drop.mp4" autoplay muted loop playsinline></video>
+  <div class="drop-overlay"></div>
+
+  <div class="drop-content">
+    <span class="drop-season">SS2026</span>
+    <h2 class="drop-title">Nuevo Drop</h2>
+    <p class="drop-sub">La nueva colección ya está disponible.</p>
+    <a href="#shop" class="drop-btn">
+      Ver colección
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+      </svg>
+    </a>
+  </div>
+</section>
+
+</div><!-- /.scroll-stack -->
+
+<!-- ── SHOP ── -->
+<section class="shop" id="shop">
+  <div class="shop-header">
+    <span class="shop-title">Destacados</span>
+    <a href="#" class="shop-link">Ver todo →</a>
+  </div>
+  <div class="shop-grid">
+
+    <div class="product-card">
+      <div class="product-img"><img src="product-1.png" alt="Sweater Rayado Marron"></div>
+      <span class="product-name">Sweater Rayado Marron</span>
+      <span class="product-price">$30.000</span>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img"><img src="product-2.png" alt="Sweater Azul Splash"></div>
+      <span class="product-name">Sweater Azul Splash</span>
+      <span class="product-price">$40.000</span>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img"><img src="product-3.png" alt="Sweater Double Azul"></div>
+      <span class="product-name">Sweater Double Azul</span>
+      <span class="product-price">$25.000</span>
+    </div>
+
+    <div class="product-card">
+      <div class="product-img"><img src="product-4.png" alt="Sweater Rayado Azul"></div>
+      <span class="product-name">Sweater Rayado Azul</span>
+      <span class="product-price">$30.000</span>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── CONTACT ── -->
+<section class="contact" id="contact">
+  <p class="contact-title">Contacto</p>
+  <div class="contact-form">
+    <div class="contact-field">
+      <input type="text" placeholder="nombre">
+    </div>
+    <div class="contact-field">
+      <input type="email" placeholder="email">
+    </div>
+    <div class="contact-field">
+      <textarea placeholder="mensaje"></textarea>
+    </div>
+    <button class="contact-btn">
+      Enviar
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+      </svg>
+    </button>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-index">
+    <div>
+      <p class="footer-col-title">Shop</p>
+      <div class="footer-col-links">
+        <a href="shop.html" class="footer-col-link">Destacados</a>
+        <a href="#" class="footer-col-link">Nuevos ingresos</a>
+        <a href="#" class="footer-col-link">Sweaters</a>
+        <a href="#" class="footer-col-link">Accesorios</a>
+      </div>
+    </div>
+    <div>
+      <p class="footer-col-title">Info</p>
+      <div class="footer-col-links">
+        <a href="about.html" class="footer-col-link">Sobre Orfeo</a>
+        <a href="shipping.html" class="footer-col-link">Envíos</a>
+        <a href="returns.html" class="footer-col-link">Cambios y devoluciones</a>
+        <a href="terms.html" class="footer-col-link">Términos</a>
+      </div>
+    </div>
+    <div>
+      <p class="footer-col-title">Socials</p>
+      <div class="footer-col-links">
+        <a href="#" class="footer-col-link">Instagram</a>
+        <a href="#" class="footer-col-link">TikTok</a>
+        <a href="#" class="footer-col-link">Pinterest</a>
+      </div>
+    </div>
+    <div>
+      <p class="footer-col-title">Contacto</p>
+      <div class="footer-col-links">
+        <a href="#contact" class="footer-col-link">Formulario</a>
+        <a href="mailto:hola@orfeo.ar" class="footer-col-link">hola@orfeo.ar</a>
+        <a href="#" class="footer-col-link">WhatsApp</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span class="footer-copy">© 2026 Orfeo. Todos los derechos reservados.</span>
+    <span class="footer-logo">Orfeo®</span>
+  </div>
+</footer>
+
+<script>
+  const nav = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY >= window.innerHeight);
+  }, { passive: true });
+</script>
+
+</body>
+</html>
