@@ -481,6 +481,7 @@ async function loadProducts() {
 
 /* ── FILTER ── */
 function setFilter(filter, btn) {
+  if (!productsLoaded) return;
   currentFilter = filter;
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
@@ -565,20 +566,22 @@ function handleAdd(btn, product) {
 
 updateCartNav();
 
-/* ── URL FILTER PARAM ── */
-const urlFilter = new URLSearchParams(window.location.search).get('filter');
-if (urlFilter) {
-  currentFilter = urlFilter;
-  const btn = document.querySelector(`.filter-btn[data-filter="${urlFilter}"]`);
-  if (btn) {
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-  }
-}
-
 /* ── INIT ── */
+let productsLoaded = false;
+
 async function boot() {
   await loadProducts();
+  productsLoaded = true;
+  // aplicar urlFilter después de cargar
+  const urlFilter = new URLSearchParams(window.location.search).get('filter');
+  if (urlFilter) {
+    currentFilter = urlFilter;
+    const btn = document.querySelector(`.filter-btn[data-filter="${urlFilter}"]`);
+    if (btn) {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+  }
   renderProducts();
 }
 boot();
