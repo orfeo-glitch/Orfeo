@@ -12,11 +12,11 @@ const defaultDb = {
   nextId: 5
 };
 
-// ── Upstash REST helpers ──
 async function kvGet(key) {
   const url   = process.env.KV_REST_API_URL;
   const token = process.env.KV_REST_API_TOKEN;
-  const res = await fetch(`${url}/get/${key}`, {
+  if (!url || !token) return null;
+  const res = await fetch(`${url}/get/${encodeURIComponent(key)}`, {
     headers: { Authorization: `Bearer ${token}` }
   });
   const json = await res.json();
@@ -27,14 +27,16 @@ async function kvGet(key) {
 async function kvSet(key, value) {
   const url   = process.env.KV_REST_API_URL;
   const token = process.env.KV_REST_API_TOKEN;
-  await fetch(`${url}/set/${key}`, {
+  if (!url || !token) throw new Error('Missing KV env vars');
+  const res = await fetch(`${url}/set/${encodeURIComponent(key)}`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify(JSON.stringify(value)) // Upstash espera string
+    body: JSON.stringify(JSON.stringify(value))
   });
+  if (!res.ok) throw new Error('KV set failed: ' + res.status);
 }
 
 module.exports = async function handler(req, res) {
