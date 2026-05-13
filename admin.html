@@ -904,8 +904,8 @@ function renderProductsList() {
 let currentProductId = null;
 
 function showView(which) {
-  document.getElementById('view-list').style.display   = which === 'list' ? '' : 'none';
-  document.getElementById('view-editor').style.display = which === 'editor' ? '' : 'none';
+  document.getElementById('view-list').style.display   = which === 'list'   ? 'flex' : 'none';
+  document.getElementById('view-editor').style.display = which === 'editor' ? 'flex' : 'none';
   if (which === 'list') renderProductsList();
 }
 
