@@ -246,6 +246,28 @@
     margin-top: 2px;
   }
 
+  .product-add {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    padding: 8px 16px;
+    border: 0.5px solid rgba(13,13,13,0.2);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--dark);
+    font-family: var(--font-sans);
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    width: fit-content;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+  }
+  .product-add:hover,
+  .product-add.added { background: var(--dark); color: var(--white); border-color: var(--dark); }
+
   /* ── EMPTY STATE ── */
   .empty-state {
     grid-column: 1/-1;
@@ -346,7 +368,7 @@
       </svg>
       <input type="text" placeholder="Buscar" id="search-input" oninput="filterProducts()">
     </div>
-    <span class="nav-cart">Carrito: 0</span>
+    <span class="nav-cart"><a href="cart.html" id="nav-cart" style="color:inherit;text-decoration:none;">Carrito: 0</a></span>
   </div>
 </nav>
 
@@ -501,6 +523,7 @@ function renderProducts() {
         <span class="product-cat">${escHtml(p.categoria)}</span>
         <span class="product-name">${escHtml(p.nombre)}</span>
         <span class="product-price">$${Number(p.precio).toLocaleString('es-AR')}</span>
+        ${p.stock !== false ? `<button class="product-add" onclick='handleAdd(this, ${JSON.stringify(p)})'>+ Agregar</button>` : ''}
       </div>
     </div>
   `).join('');
@@ -509,6 +532,38 @@ function renderProducts() {
 function escHtml(str) {
   return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+
+/* ── CARRITO ── */
+const CART_KEY = 'orfeo_cart';
+
+function getCart() {
+  try { return JSON.parse(localStorage.getItem(CART_KEY) || '[]'); } catch { return []; }
+}
+
+function saveCart(cart) {
+  localStorage.setItem(CART_KEY, JSON.stringify(cart));
+  updateCartNav();
+}
+
+function updateCartNav() {
+  const cart = getCart();
+  const total = cart.reduce((sum, i) => sum + i.qty, 0);
+  const el = document.getElementById('nav-cart');
+  if (el) el.textContent = `Carrito: ${total}`;
+}
+
+function handleAdd(btn, product) {
+  const cart = getCart();
+  const existing = cart.find(i => i.id === product.id);
+  if (existing) existing.qty += 1;
+  else cart.push({ ...product, qty: 1 });
+  saveCart(cart);
+  btn.textContent = '✓ Agregado';
+  btn.classList.add('added');
+  setTimeout(() => { btn.textContent = '+ Agregar'; btn.classList.remove('added'); }, 1800);
+}
+
+updateCartNav();
 
 /* ── URL FILTER PARAM ── */
 const urlFilter = new URLSearchParams(window.location.search).get('filter');

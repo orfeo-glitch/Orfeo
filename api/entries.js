@@ -1,4 +1,4 @@
-const { kv } = require('@vercel/kv');
+const DB_KEY = 'orfeo_db';
 
 const defaultDb = {
   products: [
@@ -7,10 +7,35 @@ const defaultDb = {
     { id:3, nombre:"Sweater Double Azul",   precio:25000, img:"product-3.png", categoria:"sweater", stock:true, destacado:true, descripcion:"", fecha:"2026-01-01" },
     { id:4, nombre:"Sweater Rayado Azul",   precio:30000, img:"product-4.png", categoria:"sweater", stock:true, destacado:true, descripcion:"", fecha:"2026-01-01" },
   ],
-  drop:     { temporada:"SS2026", titulo:"Nuevo Drop", subtitulo:"La nueva colección ya está disponible.", videoUrl:"drop.mp4" },
+  drop:     { temporada:"SS2026", titulo:"Nuevo Drop", subtitulo:"La nueva colección ya está disponible.", videoUrl:"img/drop.mp4" },
   settings: { email:"hola@orfeo.ar", instagram:"#", tiktok:"#", whatsapp:"#" },
   nextId: 5
 };
+
+// ── Upstash REST helpers ──
+async function kvGet(key) {
+  const url   = process.env.KV_REST_API_URL;
+  const token = process.env.KV_REST_API_TOKEN;
+  const res = await fetch(`${url}/get/${key}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  const json = await res.json();
+  if (!json.result) return null;
+  return JSON.parse(json.result);
+}
+
+async function kvSet(key, value) {
+  const url   = process.env.KV_REST_API_URL;
+  const token = process.env.KV_REST_API_TOKEN;
+  await fetch(`${url}/set/${key}`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(JSON.stringify(value)) // Upstash espera string
+  });
+}
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -20,7 +45,7 @@ module.exports = async function handler(req, res) {
 
   if (req.method === 'GET') {
     try {
-      const db = await kv.get('orfeo_db');
+      const db = await kvGet(DB_KEY);
       return res.status(200).json(db || defaultDb);
     } catch (e) {
       console.error('KV get error:', e.message);
@@ -33,7 +58,7 @@ module.exports = async function handler(req, res) {
     const token  = (req.headers.authorization || '').replace('Bearer ', '').trim();
     if (token !== secret) return res.status(401).json({ error: 'Unauthorized' });
     try {
-      await kv.set('orfeo_db', req.body);
+      await kvSet(DB_KEY, req.body);
       return res.status(200).json({ ok: true });
     } catch (e) {
       console.error('KV set error:', e.message);

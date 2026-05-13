@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Carrito — Orfeo</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #f0ede6;
+    --dark:     #0d0d0d;
+    --white:    #ffffff;
+    --border:   rgba(13,13,13,0.1);
+    --muted:    rgba(13,13,13,0.38);
+    --panel:    #e8e5de;
+    --nav-h:    52px;
+    --font:     'DM Sans', sans-serif;
+  }
+
+  html, body { height: 100%; overscroll-behavior: none; }
+
+  body {
+    background: var(--bg);
+    color: var(--dark);
+    font-family: var(--font);
+    overflow-x: hidden;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    height: var(--nav-h);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 36px;
+    background: var(--bg);
+    border-bottom: 0.5px solid var(--border);
+  }
+
+  .nav-logo {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    color: var(--dark);
+    text-decoration: none;
+  }
+
+  .nav-link {
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--dark);
+    opacity: 0.5;
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+  .nav-link:hover { opacity: 1; }
+
+  /* ── LAYOUT ── */
+  .page {
+    margin-top: var(--nav-h);
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    min-height: calc(100vh - var(--nav-h));
+    align-items: start;
+  }
+
+  /* ── IZQUIERDA: ITEMS ── */
+  .cart-side {
+    padding: 52px 48px 80px;
+    border-right: 0.5px solid var(--border);
+  }
+
+  .cart-title {
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 36px;
+  }
+
+  /* item */
+  .cart-item {
+    display: grid;
+    grid-template-columns: 72px 1fr auto;
+    gap: 16px;
+    align-items: center;
+    padding: 20px 0;
+    border-bottom: 0.5px solid var(--border);
+  }
+
+  .cart-item:first-of-type { border-top: 0.5px solid var(--border); }
+
+  .item-thumb {
+    width: 72px;
+    height: 96px;
+    background: var(--panel);
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .item-thumb img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .item-info { display: flex; flex-direction: column; gap: 4px; }
+
+  .item-name {
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+  }
+
+  .item-price {
+    font-size: 12px;
+    font-weight: 300;
+    color: var(--muted);
+  }
+
+  .item-qty {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .qty-btn {
+    width: 24px; height: 24px;
+    border: 0.5px solid var(--border);
+    border-radius: 50%;
+    background: transparent;
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--dark);
+    transition: background 0.15s;
+    font-family: var(--font);
+  }
+  .qty-btn:hover { background: var(--dark); color: var(--white); border-color: var(--dark); }
+
+  .qty-num {
+    font-size: 13px;
+    font-weight: 300;
+    min-width: 16px;
+    text-align: center;
+  }
+
+  .item-remove {
+    font-size: 10px;
+    font-weight: 300;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 0.2s;
+    align-self: flex-start;
+  }
+  .item-remove:hover { color: var(--dark); }
+
+  /* total */
+  .cart-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 24px 0 0;
+  }
+
+  .cart-total-label {
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .cart-total-value {
+    font-size: 20px;
+    font-weight: 300;
+    letter-spacing: -0.01em;
+  }
+
+  /* empty */
+  .cart-empty {
+    padding: 80px 0;
+    text-align: center;
+  }
+
+  .cart-empty p {
+    font-size: 13px;
+    font-weight: 300;
+    color: var(--muted);
+    margin-bottom: 24px;
+  }
+
+  /* ── DERECHA: CHECKOUT ── */
+  .checkout-side {
+    padding: 52px 40px 80px;
+    background: var(--dark);
+    min-height: calc(100vh - var(--nav-h));
+    display: flex;
+    flex-direction: column;
+  }
+
+  .checkout-title {
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+    margin-bottom: 36px;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .form-label {
+    display: block;
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+    margin-bottom: 8px;
+  }
+
+  .form-input,
+  .form-select {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 0.5px solid rgba(255,255,255,0.1);
+    padding: 12px 14px;
+    font-family: var(--font);
+    font-size: 13px;
+    font-weight: 300;
+    color: var(--white);
+    outline: none;
+    transition: border-color 0.2s;
+    appearance: none;
+    border-radius: 0;
+  }
+  .form-input:focus,
+  .form-select:focus { border-color: rgba(255,255,255,0.35); }
+  .form-input::placeholder { color: rgba(255,255,255,0.2); }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  /* pago a palabra */
+  .pago-info {
+    background: rgba(255,255,255,0.04);
+    border: 0.5px solid rgba(255,255,255,0.08);
+    padding: 16px;
+    margin-bottom: 24px;
+  }
+
+  .pago-info p {
+    font-size: 12px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.45);
+    line-height: 1.6;
+    letter-spacing: 0.01em;
+  }
+
+  .pago-info strong {
+    color: rgba(255,255,255,0.7);
+    font-weight: 400;
+  }
+
+  /* botones de envío */
+  .submit-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: auto;
+    padding-top: 32px;
+  }
+
+  .btn-send {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 14px 24px;
+    border-radius: 999px;
+    font-family: var(--font);
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    border: none;
+  }
+
+  .btn-ig {
+    background: var(--white);
+    color: var(--dark);
+  }
+  .btn-ig:hover { background: rgba(255,255,255,0.88); }
+
+  .btn-email {
+    background: transparent;
+    color: rgba(255,255,255,0.6);
+    border: 0.5px solid rgba(255,255,255,0.2);
+  }
+  .btn-email:hover { border-color: rgba(255,255,255,0.5); color: var(--white); }
+
+  .btn-send svg { flex-shrink: 0; }
+
+  /* error */
+  .form-error {
+    font-size: 11px;
+    font-weight: 300;
+    color: rgba(255,120,100,0.8);
+    margin-top: 12px;
+    display: none;
+  }
+  .form-error.show { display: block; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    .page { grid-template-columns: 1fr; }
+    .checkout-side { min-height: auto; }
+    .cart-side { padding: 40px 20px 48px; }
+    .checkout-side { padding: 40px 20px 52px; }
+    nav { padding: 0 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav>
+  <a href="index.html" class="nav-logo">Orfeo</a>
+  <a href="shop.html" class="nav-link">← Seguir comprando</a>
+</nav>
+
+<!-- ── PÁGINA ── -->
+<div class="page">
+
+  <!-- ITEMS -->
+  <div class="cart-side">
+    <p class="cart-title">Tu carrito</p>
+    <div id="cart-items"></div>
+    <div class="cart-total" id="cart-total" style="display:none">
+      <span class="cart-total-label">Total</span>
+      <span class="cart-total-value" id="total-value">$0</span>
+    </div>
+  </div>
+
+  <!-- CHECKOUT -->
+  <div class="checkout-side">
+    <p class="checkout-title">Datos del pedido</p>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Nombre</label>
+        <input class="form-input" id="f-nombre" type="text" placeholder="Juan">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Apellido</label>
+        <input class="form-input" id="f-apellido" type="text" placeholder="García">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input class="form-input" id="f-email" type="email" placeholder="juan@mail.com">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Dirección</label>
+      <input class="form-input" id="f-dir" type="text" placeholder="Av. Corrientes 1234">
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Ciudad</label>
+        <input class="form-input" id="f-ciudad" type="text" placeholder="Buenos Aires">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Código postal</label>
+        <input class="form-input" id="f-cp" type="text" placeholder="C1043">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Notas (opcional)</label>
+      <input class="form-input" id="f-notas" type="text" placeholder="Dejar en portería, etc.">
+    </div>
+
+    <div class="pago-info">
+      <p><strong>Método de pago:</strong> acordamos el pago directamente con vos una vez recibido tu pedido. Te contactamos a la brevedad para coordinar.</p>
+    </div>
+
+    <p class="form-error" id="form-error">Completá todos los campos obligatorios.</p>
+
+    <div class="submit-group">
+      <button class="btn-send btn-ig" onclick="sendOrder('ig')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+        Enviar pedido por Instagram
+      </button>
+      <button class="btn-send btn-email" onclick="sendOrder('email')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        Enviar por email
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const CART_KEY = 'orfeo_cart';
+  const DB_KEY   = 'orfeo_db';
+
+  // ── INSTAGRAM Y EMAIL (se leen de settings si hay) ──
+  let INSTAGRAM_USER = 'orfeo.ar'; // reemplazar con usuario real
+  let CONTACT_EMAIL  = 'hola@orfeo.ar';
+
+  // Cargar settings
+  (async function() {
+    let db = null;
+    try { const r = await fetch('/api/entries'); if (r.ok) db = await r.json(); } catch {}
+    if (!db) try { db = JSON.parse(localStorage.getItem(DB_KEY) || 'null'); } catch {}
+    if (db?.settings?.email) CONTACT_EMAIL = db.settings.email;
+    if (db?.settings?.instagram && db.settings.instagram !== '#') {
+      // extraer usuario de la URL si viene como https://instagram.com/usuario
+      const ig = db.settings.instagram.replace(/\/$/, '').split('/').pop();
+      if (ig) INSTAGRAM_USER = ig;
+    }
+  })();
+
+  // ── CARRITO ──
+  function getCart() {
+    try { return JSON.parse(localStorage.getItem(CART_KEY) || '[]'); } catch { return []; }
+  }
+
+  function saveCart(cart) {
+    localStorage.setItem(CART_KEY, JSON.stringify(cart));
+    renderCart();
+  }
+
+  function renderCart() {
+    const cart = getCart();
+    const container = document.getElementById('cart-items');
+    const totalRow  = document.getElementById('cart-total');
+    const totalVal  = document.getElementById('total-value');
+
+    if (cart.length === 0) {
+      container.innerHTML = `
+        <div class="cart-empty">
+          <p>Tu carrito está vacío.</p>
+          <a href="shop.html" style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--dark);text-decoration:none;border-bottom:0.5px solid currentColor;padding-bottom:2px;">Ver productos</a>
+        </div>`;
+      totalRow.style.display = 'none';
+      return;
+    }
+
+    container.innerHTML = cart.map((item, i) => `
+      <div class="cart-item">
+        <div class="item-thumb">
+          <img src="${esc(item.img)}" alt="${esc(item.nombre)}" onerror="this.style.display='none'">
+        </div>
+        <div class="item-info">
+          <span class="item-name">${esc(item.nombre)}</span>
+          <span class="item-price">$${Number(item.precio).toLocaleString('es-AR')}</span>
+          <div class="item-qty">
+            <button class="qty-btn" onclick="changeQty(${i}, -1)">−</button>
+            <span class="qty-num">${item.qty}</span>
+            <button class="qty-btn" onclick="changeQty(${i}, 1)">+</button>
+          </div>
+        </div>
+        <button class="item-remove" onclick="removeItem(${i})">Quitar</button>
+      </div>
+    `).join('');
+
+    const total = cart.reduce((sum, i) => sum + (i.precio * i.qty), 0);
+    totalVal.textContent = '$' + total.toLocaleString('es-AR');
+    totalRow.style.display = 'flex';
+  }
+
+  function changeQty(idx, delta) {
+    const cart = getCart();
+    cart[idx].qty = Math.max(1, cart[idx].qty + delta);
+    saveCart(cart);
+  }
+
+  function removeItem(idx) {
+    const cart = getCart();
+    cart.splice(idx, 1);
+    saveCart(cart);
+  }
+
+  // ── VALIDAR FORM ──
+  function getFormData() {
+    const nombre   = document.getElementById('f-nombre').value.trim();
+    const apellido = document.getElementById('f-apellido').value.trim();
+    const email    = document.getElementById('f-email').value.trim();
+    const dir      = document.getElementById('f-dir').value.trim();
+    const ciudad   = document.getElementById('f-ciudad').value.trim();
+    const cp       = document.getElementById('f-cp').value.trim();
+    const notas    = document.getElementById('f-notas').value.trim();
+    return { nombre, apellido, email, dir, ciudad, cp, notas };
+  }
+
+  function validate(f) {
+    return f.nombre && f.apellido && f.email && f.dir && f.ciudad && f.cp;
+  }
+
+  // ── GENERAR TEXTO DEL PEDIDO ──
+  function buildOrderText(f, cart) {
+    const items = cart.map(i =>
+      `• ${i.nombre} x${i.qty} — $${Number(i.precio * i.qty).toLocaleString('es-AR')}`
+    ).join('\n');
+    const total = cart.reduce((s, i) => s + i.precio * i.qty, 0);
+    return [
+      '🛍 Nuevo pedido — Orfeo',
+      '',
+      `Nombre: ${f.nombre} ${f.apellido}`,
+      `Email: ${f.email}`,
+      `Dirección: ${f.dir}, ${f.ciudad} (${f.cp})`,
+      f.notas ? `Notas: ${f.notas}` : '',
+      '',
+      '— Productos —',
+      items,
+      '',
+      `Total: $${total.toLocaleString('es-AR')}`,
+      '',
+      'Pago a coordinar.',
+    ].filter(l => l !== undefined).join('\n');
+  }
+
+  // ── ENVIAR ──
+  function sendOrder(method) {
+    const cart = getCart();
+    const errEl = document.getElementById('form-error');
+
+    if (cart.length === 0) {
+      errEl.textContent = 'Tu carrito está vacío.';
+      errEl.classList.add('show');
+      return;
+    }
+
+    const f = getFormData();
+    if (!validate(f)) {
+      errEl.textContent = 'Completá todos los campos obligatorios.';
+      errEl.classList.add('show');
+      return;
+    }
+
+    errEl.classList.remove('show');
+    const text = buildOrderText(f, cart);
+    const encoded = encodeURIComponent(text);
+
+    if (method === 'ig') {
+      // Instagram DM — abre el perfil con mensaje pre-armado
+      // Instagram no tiene URL de DM directa pública estable, usamos el perfil
+      // En mobile abre la app directamente
+      const igUrl = `https://ig.me/m/${INSTAGRAM_USER}`;
+      // Copiamos el texto al clipboard para que lo peguen
+      navigator.clipboard.writeText(text).catch(() => {});
+      // Abrimos Instagram DM
+      window.open(igUrl, '_blank');
+      showConfirm('El texto del pedido fue copiado al portapapeles. Pegalo en el mensaje de Instagram.');
+    } else {
+      // Email
+      const subject = encodeURIComponent('Pedido Orfeo — ' + f.nombre + ' ' + f.apellido);
+      window.location.href = `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${encoded}`;
+    }
+  }
+
+  function showConfirm(msg) {
+    const div = document.createElement('div');
+    div.style.cssText = `
+      position:fixed;inset:0;background:rgba(13,13,13,0.6);z-index:999;
+      display:flex;align-items:center;justify-content:center;padding:24px;
+    `;
+    div.innerHTML = `
+      <div style="background:var(--bg);padding:36px;max-width:400px;width:100%;">
+        <p style="font-size:13px;font-weight:300;line-height:1.6;margin-bottom:24px;">${msg}</p>
+        <button onclick="this.closest('div[style]').remove()" style="
+          padding:10px 24px;border-radius:999px;background:var(--dark);color:var(--white);
+          border:none;font-family:var(--font);font-size:11px;letter-spacing:0.08em;
+          text-transform:uppercase;cursor:pointer;
+        ">Entendido</button>
+      </div>
+    `;
+    document.body.appendChild(div);
+  }
+
+  function esc(str) {
+    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── INIT ──
+  renderCart();
+</script>
+</body>
+</html>
