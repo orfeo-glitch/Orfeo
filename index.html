@@ -662,32 +662,8 @@
     <span class="shop-title">Destacados</span>
     <a href="shop.html" class="shop-link">Ver todo →</a>
   </div>
-  <div class="shop-grid">
-
-    <div class="product-card">
-      <div class="product-img"><img src="product-1.png" alt="Sweater Rayado Marron"></div>
-      <span class="product-name">Sweater Rayado Marron</span>
-      <span class="product-price">$30.000</span>
-    </div>
-
-    <div class="product-card">
-      <div class="product-img"><img src="product-2.png" alt="Sweater Azul Splash"></div>
-      <span class="product-name">Sweater Azul Splash</span>
-      <span class="product-price">$40.000</span>
-    </div>
-
-    <div class="product-card">
-      <div class="product-img"><img src="product-3.png" alt="Sweater Double Azul"></div>
-      <span class="product-name">Sweater Double Azul</span>
-      <span class="product-price">$25.000</span>
-    </div>
-
-    <div class="product-card">
-      <div class="product-img"><img src="product-4.png" alt="Sweater Rayado Azul"></div>
-      <span class="product-name">Sweater Rayado Azul</span>
-      <span class="product-price">$30.000</span>
-    </div>
-
+  <div class="shop-grid" id="shop-grid">
+    <!-- productos cargados dinámicamente desde /api/entries -->
   </div>
 </section>
 
@@ -763,41 +739,64 @@
     nav.classList.toggle('scrolled', window.scrollY >= window.innerHeight);
   }, { passive: true });
 
-  /* ── SYNC DESDE ADMIN (/api/entries + localStorage fallback) ── */
+  /* ── SYNC DESDE ADMIN (/api/entries + localStorage + hardcoded fallback) ── */
   (async function() {
+    // Productos hardcoded como último fallback (nunca queda vacío)
+    const hardcodedFallback = [
+      { nombre:"Sweater Rayado Marron", precio:30000, img:"product-1.png", destacado:true },
+      { nombre:"Sweater Azul Splash",   precio:40000, img:"product-2.png", destacado:true },
+      { nombre:"Sweater Double Azul",   precio:25000, img:"product-3.png", destacado:true },
+      { nombre:"Sweater Rayado Azul",   precio:30000, img:"product-4.png", destacado:true },
+    ];
+
     let db = null;
 
     // 1. Intentar API
     try {
       const res = await fetch('/api/entries');
-      if (res.ok) db = await res.json();
-    } catch(e) {}
+      if (res.ok) {
+        const parsed = await res.json();
+        // Guardar en localStorage solo si es un objeto válido
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+          db = parsed;
+          try { localStorage.setItem('orfeo_db', JSON.stringify(db)); } catch(e) {}
+        } else {
+          console.warn('[orfeo] /api/entries devolvió formato inesperado:', typeof parsed);
+        }
+      } else {
+        console.warn('[orfeo] /api/entries status:', res.status);
+      }
+    } catch(e) {
+      console.error('[orfeo] fetch /api/entries falló:', e.message);
+    }
 
     // 2. Fallback: localStorage
     if (!db) {
       try { db = JSON.parse(localStorage.getItem('orfeo_db') || 'null'); } catch(e) {}
     }
 
-    if (!db) return;
-
     // Productos destacados en el grid del inicio
-    if (db.products && db.products.length > 0) {
-      const destacados = db.products.filter(p => p.destacado);
-      if (destacados.length > 0) {
-        const grid = document.querySelector('.shop-grid');
-        if (grid) {
-          grid.innerHTML = destacados.map(p => `
-            <div class="product-card">
-              <div class="product-img">
-                <img src="${p.img}" alt="${p.nombre}" onerror="this.style.display='none'">
-              </div>
-              <span class="product-name">${p.nombre}</span>
-              <span class="product-price">$${Number(p.precio).toLocaleString('es-AR')}</span>
-            </div>
-          `).join('');
-        }
-      }
+    const grid = document.getElementById('shop-grid');
+    if (grid) {
+      const products = (db && db.products && db.products.length > 0)
+        ? db.products
+        : hardcodedFallback;
+
+      const destacados = products.filter(p => p.destacado !== false);
+      const toShow = destacados.length > 0 ? destacados : products.slice(0, 4);
+
+      grid.innerHTML = toShow.map(p => `
+        <div class="product-card">
+          <div class="product-img">
+            <img src="${p.img}" alt="${p.nombre}" onerror="this.style.display='none'">
+          </div>
+          <span class="product-name">${p.nombre}</span>
+          <span class="product-price">$${Number(p.precio).toLocaleString('es-AR')}</span>
+        </div>
+      `).join('');
     }
+
+    if (!db) return;
 
     // Drop / Hero section
     if (db.drop) {

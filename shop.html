@@ -460,8 +460,19 @@ async function loadProducts() {
   // 1. Intentar API
   try {
     const res = await fetch('/api/entries');
-    if (res.ok) db = await res.json();
-  } catch(e) {}
+    if (res.ok) {
+      db = await res.json();
+      // Verificar que llegó un objeto válido (no un string por doble-stringify)
+      if (typeof db !== 'object' || db === null || Array.isArray(db)) {
+        console.warn('[orfeo] /api/entries devolvió un formato inesperado:', typeof db);
+        db = null;
+      }
+    } else {
+      console.warn('[orfeo] /api/entries respondió con status:', res.status);
+    }
+  } catch(e) {
+    console.error('[orfeo] fetch /api/entries falló:', e.message);
+  }
 
   // 2. Fallback: localStorage
   if (!db) {
@@ -481,11 +492,13 @@ async function loadProducts() {
 
 /* ── FILTER ── */
 function setFilter(filter, btn) {
-  if (!productsLoaded) return;
+  // Actualizar estado y UI siempre; renderizar solo si ya cargó
   currentFilter = filter;
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
-  renderProducts();
+  if (productsLoaded) renderProducts();
+  // Si todavía está cargando, boot() llamará renderProducts() con el
+  // currentFilter ya seteado por este click — sin race condition.
 }
 
 function filterProducts() {
