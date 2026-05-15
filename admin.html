@@ -380,6 +380,83 @@ input,textarea,select{font-family:var(--font);}
 #toast.success{background:#1a3a2a;border-left:2px solid var(--green);}
 #toast.error{background:#3a1a1a;border-left:2px solid var(--red);}
 
+/* ── GALLERY ── */
+.gallery-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:8px;}
+.gallery-thumb{
+  position:relative;aspect-ratio:1;background:var(--bg) center/cover no-repeat;
+  border:1px solid var(--border);overflow:hidden;
+}
+.gallery-thumb:first-child::after{
+  content:'portada';position:absolute;bottom:0;left:0;right:0;
+  background:rgba(13,13,13,0.55);color:var(--white);
+  font-size:0.38rem;letter-spacing:0.1em;text-transform:uppercase;
+  font-family:var(--mono);padding:3px 0;text-align:center;
+}
+.gallery-del{
+  position:absolute;top:3px;right:3px;width:16px;height:16px;border-radius:50%;
+  background:rgba(13,13,13,0.6);color:var(--white);border:none;cursor:pointer;
+  font-size:10px;line-height:1;display:flex;align-items:center;justify-content:center;
+  transition:background 0.12s;
+}
+.gallery-del:hover{background:var(--red);}
+.gallery-add-slot{
+  aspect-ratio:1;background:transparent;border:1px dashed rgba(13,13,13,0.18);
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  font-size:18px;color:rgba(13,13,13,0.2);transition:border-color 0.14s,color 0.14s;
+}
+.gallery-add-slot:hover{border-color:var(--dark);color:var(--dark);}
+
+/* ── COLORS ── */
+.color-row{
+  display:flex;align-items:center;gap:6px;padding:5px 0;
+  border-bottom:1px solid var(--border);
+}
+.color-row:last-child{border-bottom:none;}
+.color-swatch-preview{
+  width:20px;height:20px;border-radius:50%;border:1px solid var(--border);
+  flex-shrink:0;cursor:pointer;
+}
+.color-name-input{
+  flex:1;background:var(--white);border:1px solid var(--border);
+  padding:4px 7px;font-family:var(--font);font-size:0.75rem;outline:none;
+  color:var(--dark);
+}
+.color-hex-input{
+  width:80px;background:var(--white);border:1px solid var(--border);
+  padding:4px 7px;font-family:var(--mono);font-size:0.7rem;outline:none;
+  color:var(--dark);
+}
+.color-picker-input{width:24px;height:24px;padding:0;border:none;cursor:pointer;background:none;}
+.color-del-btn{
+  width:20px;height:20px;border:none;background:none;color:rgba(13,13,13,0.3);
+  cursor:pointer;font-size:14px;transition:color 0.12s;flex-shrink:0;line-height:1;
+}
+.color-del-btn:hover{color:var(--red);}
+
+/* ── SIZES ── */
+.talles-grid{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;}
+.talle-chip{
+  padding:4px 10px;border:1px solid rgba(13,13,13,0.18);
+  font-size:0.65rem;font-family:var(--mono);cursor:pointer;
+  background:transparent;color:rgba(13,13,13,0.5);transition:all 0.12s;
+}
+.talle-chip.on{background:var(--dark);color:var(--white);border-color:var(--dark);}
+
+/* ── DROP MEDIA PREVIEW ── */
+.drop-media-preview{
+  width:100%;height:110px;background:var(--panel) center/cover no-repeat;
+  border:1px solid var(--border);margin-top:6px;
+  display:none;object-fit:cover;
+}
+.drop-media-preview.show{display:block;}
+.drop-type-row{display:flex;gap:12px;margin-bottom:12px;}
+.drop-type-btn{
+  padding:6px 14px;border:1px solid var(--border);background:transparent;
+  font-size:0.6rem;font-family:var(--mono);letter-spacing:0.08em;cursor:pointer;
+  color:rgba(13,13,13,0.5);transition:all 0.14s;
+}
+.drop-type-btn.on{background:var(--dark);color:var(--white);border-color:var(--dark);}
+
 /* ── CONFIRM MODAL ── */
 #confirmModal{
   position:fixed;inset:0;z-index:9998;background:rgba(13,13,13,0.7);
@@ -601,6 +678,53 @@ input,textarea,select{font-family:var(--font);}
                     </div>
                   </div>
                 </div>
+
+                <!-- ── GALERÍA ── -->
+                <div class="panel-card">
+                  <p class="panel-title">Galería</p>
+                  <div class="gallery-grid" id="gallery-grid"></div>
+                  <input type="file" id="gallery-file" accept="image/*" multiple style="display:none" onchange="handleGalleryUpload(this)">
+                  <p style="font-size:0.46rem;font-family:var(--mono);color:var(--muted-d);margin-top:6px;line-height:1.5;">
+                    La 1ª imagen es la portada. Máx 5. Se comprimen automáticamente.
+                  </p>
+                </div>
+
+                <!-- ── COLORES ── -->
+                <div class="panel-card">
+                  <p class="panel-title">Colores disponibles</p>
+                  <div id="colors-list"></div>
+                  <button class="btn btn-sm" onclick="addColor()" style="width:100%;margin-top:8px;">+ Agregar color</button>
+                </div>
+
+                <!-- ── TALLES ── -->
+                <div class="panel-card">
+                  <p class="panel-title">Talles</p>
+                  <div class="talles-grid" id="talles-grid">
+                    <button class="talle-chip" onclick="toggleTalle(this)" data-t="XS">XS</button>
+                    <button class="talle-chip" onclick="toggleTalle(this)" data-t="S">S</button>
+                    <button class="talle-chip" onclick="toggleTalle(this)" data-t="M">M</button>
+                    <button class="talle-chip" onclick="toggleTalle(this)" data-t="L">L</button>
+                    <button class="talle-chip" onclick="toggleTalle(this)" data-t="XL">XL</button>
+                    <button class="talle-chip" onclick="toggleTalle(this)" data-t="XXL">XXL</button>
+                    <button class="talle-chip" onclick="toggleTalle(this)" data-t="Único">Único</button>
+                  </div>
+                  <input class="form-input" id="ed-talles-custom" type="text"
+                    placeholder="Otros: 38, 39, 40... (separados por coma)">
+                </div>
+
+                <!-- ── MATERIAL & GUÍA ── -->
+                <div class="panel-card">
+                  <p class="panel-title">Material &amp; Cuidado</p>
+                  <textarea class="form-input" id="ed-material"
+                    placeholder="Ej: 100% Algodón. Lavar a 30°. No usar secadora."
+                    style="resize:vertical;min-height:56px;"></textarea>
+                </div>
+                <div class="panel-card">
+                  <p class="panel-title">Guía de talles</p>
+                  <textarea class="form-input" id="ed-guia"
+                    placeholder="Ej:&#10;S — Pecho 88cm, Largo 68cm&#10;M — Pecho 92cm, Largo 70cm"
+                    style="resize:vertical;min-height:72px;"></textarea>
+                </div>
               </div>
             </div>
           </div>
@@ -613,7 +737,7 @@ input,textarea,select{font-family:var(--font);}
         <div class="section-header">
           <div>
             <p class="section-title">Drop / Hero</p>
-            <p class="section-sub">Editá el contenido de la sección Drop SS2026</p>
+            <p class="section-sub">Editá el contenido y el fondo de la sección principal</p>
           </div>
         </div>
         <div class="drop-layout">
@@ -630,10 +754,35 @@ input,textarea,select{font-family:var(--font);}
               <label class="drop-form-label">Subtítulo</label>
               <input class="drop-form-input" id="drop-subtitulo" type="text" placeholder="La nueva colección ya está disponible." oninput="updateDropPreview()">
             </div>
+
             <div class="drop-form-group">
-              <label class="drop-form-label">URL del video de fondo (drop.mp4 o URL externa)</label>
-              <input class="drop-form-input" id="drop-video" type="text" placeholder="drop.mp4">
+              <label class="drop-form-label">Tipo de fondo</label>
+              <div class="drop-type-row">
+                <button class="drop-type-btn on" id="drop-type-video" onclick="setDropType('video')">▶ Video</button>
+                <button class="drop-type-btn"    id="drop-type-image" onclick="setDropType('image')">⬛ Imagen</button>
+              </div>
+
+              <div id="drop-video-wrap">
+                <label class="drop-form-label" style="margin-bottom:5px;">URL del video (drop.mp4 o URL externa)</label>
+                <div style="display:flex;gap:8px;">
+                  <input class="drop-form-input" id="drop-video" type="text" placeholder="img/drop.mp4">
+                </div>
+                <p style="font-size:0.46rem;font-family:var(--mono);color:var(--muted-d);margin-top:5px;">
+                  Los videos son muy pesados para subir directo. Usá una URL o la ruta en Vercel.
+                </p>
+              </div>
+
+              <div id="drop-image-wrap" style="display:none">
+                <label class="drop-form-label" style="margin-bottom:5px;">Imagen de fondo</label>
+                <div style="display:flex;gap:8px;align-items:center;">
+                  <input class="drop-form-input" id="drop-heroImg" type="text" placeholder="URL o subí una imagen">
+                  <button class="img-upload-btn" onclick="document.getElementById('drop-img-file').click()">subir</button>
+                  <input type="file" id="drop-img-file" accept="image/*" style="display:none" onchange="handleHeroImgUpload(this)">
+                </div>
+                <div id="drop-img-preview" class="drop-media-preview"></div>
+              </div>
             </div>
+
             <div class="drop-save-row">
               <button class="btn btn-primary" onclick="saveDrop()">Guardar cambios</button>
             </div>
@@ -647,7 +796,7 @@ input,textarea,select{font-family:var(--font);}
               <p class="dp-sub" id="prev-sub">La nueva colección ya está disponible.</p>
             </div>
             <p style="font-size:0.52rem;font-family:var(--mono);color:rgba(255,255,255,0.12);margin-top:16px;letter-spacing:0.06em;line-height:1.6;">
-              Los cambios se reflejan en index.html al recargar la página del sitio.
+              Los cambios se reflejan en el sitio al recargar la página.
             </p>
           </div>
         </div>
@@ -932,8 +1081,21 @@ function fillProductForm(p) {
   document.getElementById('ed-stock').checked = p?.stock !== false;
   document.getElementById('ed-dest').checked  = p?.destacado || false;
   document.getElementById('ed-desc').value    = p?.descripcion || '';
+  document.getElementById('ed-material').value = p?.materialInfo || '';
+  document.getElementById('ed-guia').value    = p?.guiaTalles || '';
   document.getElementById('editor-preview-name').textContent = p?.nombre || 'nuevo producto';
+
+  // Gallery
+  edGallery = p?.imgs ? [...p.imgs] : (p?.img ? [p.img] : []);
+  renderGallery();
   updateImgPreview();
+
+  // Colors
+  edColors = p?.colores ? p.colores.map(c => ({...c})) : [];
+  renderColors();
+
+  // Sizes
+  setTallesFromArray(p?.talles || []);
 }
 
 function onNombreInput() {
@@ -947,15 +1109,21 @@ function saveProduct() {
     return;
   }
   const nombre = document.getElementById('ed-nombre').value.trim() || 'Sin nombre';
+  const imgs   = edGallery.length > 0 ? [...edGallery] : [];
   const p = {
     id:          currentProductId || db.nextId,
     nombre,
     precio:      parseInt(document.getElementById('ed-precio').value) || 0,
-    img:         document.getElementById('ed-img').value.trim(),
+    img:         imgs[0] || document.getElementById('ed-img').value.trim(),
+    imgs,
     categoria:   document.getElementById('ed-cat').value,
     stock:       document.getElementById('ed-stock').checked,
     destacado:   document.getElementById('ed-dest').checked,
     descripcion: document.getElementById('ed-desc').value.trim(),
+    materialInfo:document.getElementById('ed-material').value.trim(),
+    guiaTalles:  document.getElementById('ed-guia').value.trim(),
+    colores:     edColors.filter(c => c.nombre || c.hex),
+    talles:      getSelectedTalles(),
     fecha:       new Date().toISOString().split('T')[0],
   };
 
@@ -996,37 +1164,200 @@ function confirmDeleteProduct(id) {
 }
 
 /* ════════════════════════════════════════
-   IMAGE UPLOAD
+   IMAGE COMPRESSION
 ════════════════════════════════════════ */
+function compressImg(file, maxPx, quality, cb) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, maxPx / Math.max(img.width, img.height));
+      const c = document.createElement('canvas');
+      c.width  = Math.round(img.width  * scale);
+      c.height = Math.round(img.height * scale);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      cb(c.toDataURL('image/jpeg', quality));
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
 function updateImgPreview() {
-  const url = document.getElementById('ed-img').value.trim();
+  const url  = document.getElementById('ed-img').value.trim();
   const prev = document.getElementById('img-preview');
-  if (url) {
-    prev.style.backgroundImage = `url('${url}')`;
-    prev.classList.add('show');
-  } else {
-    prev.classList.remove('show');
-  }
+  if (url) { prev.style.backgroundImage = `url('${url}')`; prev.classList.add('show'); }
+  else      { prev.classList.remove('show'); }
 }
 
 function handleImgUpload(input) {
   if (!input.files[0]) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    document.getElementById('ed-img').value = e.target.result;
+  compressImg(input.files[0], 900, 0.78, dataUrl => {
+    document.getElementById('ed-img').value = dataUrl;
+    // Sync first gallery slot
+    if (!edGallery.length) edGallery.push(dataUrl); else edGallery[0] = dataUrl;
+    renderGallery();
     updateImgPreview();
-  };
-  reader.readAsDataURL(input.files[0]);
+  });
 }
 
 /* ════════════════════════════════════════
-   DROP EDITOR
+   GALLERY
+════════════════════════════════════════ */
+let edGallery = []; // array of data URLs or external URLs
+
+function renderGallery() {
+  const grid = document.getElementById('gallery-grid');
+  grid.innerHTML = '';
+  const max = 5;
+  edGallery.slice(0, max).forEach((src, i) => {
+    const div = document.createElement('div');
+    div.className = 'gallery-thumb';
+    div.style.backgroundImage = `url('${src}')`;
+    const del = document.createElement('button');
+    del.className = 'gallery-del'; del.textContent = '×';
+    del.onclick = () => { edGallery.splice(i, 1); renderGallery(); syncImgFromGallery(); };
+    div.appendChild(del);
+    grid.appendChild(div);
+  });
+  if (edGallery.length < max) {
+    const add = document.createElement('div');
+    add.className = 'gallery-add-slot';
+    add.textContent = '+';
+    add.onclick = () => document.getElementById('gallery-file').click();
+    grid.appendChild(add);
+  }
+}
+
+function syncImgFromGallery() {
+  if (edGallery.length > 0) {
+    document.getElementById('ed-img').value = edGallery[0];
+    updateImgPreview();
+  }
+}
+
+function handleGalleryUpload(input) {
+  const files = Array.from(input.files).slice(0, 5 - edGallery.length);
+  let done = 0;
+  files.forEach(f => {
+    compressImg(f, 900, 0.78, dataUrl => {
+      edGallery.push(dataUrl);
+      done++;
+      if (done === files.length) { renderGallery(); syncImgFromGallery(); }
+    });
+  });
+  input.value = '';
+}
+
+/* ════════════════════════════════════════
+   COLORS
+════════════════════════════════════════ */
+let edColors = []; // [{nombre, hex}]
+
+function renderColors() {
+  const list = document.getElementById('colors-list');
+  if (edColors.length === 0) { list.innerHTML = ''; return; }
+  list.innerHTML = edColors.map((c, i) => `
+    <div class="color-row">
+      <div class="color-swatch-preview" style="background:${escHtml(c.hex)}" onclick="document.getElementById('cpick-${i}').click()"></div>
+      <input type="color" id="cpick-${i}" value="${escHtml(c.hex)}" class="color-picker-input"
+        oninput="edColors[${i}].hex=this.value;document.getElementById('cpick-prev-${i}').style.background=this.value;">
+      <input class="color-name-input" type="text" placeholder="Nombre" value="${escHtml(c.nombre)}"
+        oninput="edColors[${i}].nombre=this.value">
+      <input class="color-hex-input" type="text" placeholder="#000000" value="${escHtml(c.hex)}"
+        id="cpick-prev-${i}"
+        oninput="syncColorHex(${i},this.value)">
+      <button class="color-del-btn" onclick="removeColor(${i})">×</button>
+    </div>
+  `).join('');
+}
+
+function syncColorHex(i, val) {
+  if (/^#[0-9a-f]{6}$/i.test(val)) {
+    edColors[i].hex = val;
+    document.getElementById(`cpick-${i}`).value = val;
+    document.querySelectorAll('.color-swatch-preview')[i].style.background = val;
+  }
+}
+
+function addColor() {
+  edColors.push({ nombre: '', hex: '#0d0d0d' });
+  renderColors();
+}
+
+function removeColor(i) {
+  edColors.splice(i, 1);
+  renderColors();
+}
+
+/* ════════════════════════════════════════
+   SIZES / TALLES
+════════════════════════════════════════ */
+function toggleTalle(btn) {
+  btn.classList.toggle('on');
+}
+
+function getSelectedTalles() {
+  const standard = [...document.querySelectorAll('#talles-grid .talle-chip.on')].map(b => b.dataset.t);
+  const custom   = document.getElementById('ed-talles-custom').value.trim();
+  const extra    = custom ? custom.split(',').map(s => s.trim()).filter(Boolean) : [];
+  return [...standard, ...extra];
+}
+
+function setTallesFromArray(arr) {
+  // Reset standard chips
+  document.querySelectorAll('#talles-grid .talle-chip').forEach(b => {
+    b.classList.toggle('on', arr.includes(b.dataset.t));
+  });
+  // Custom: anything not in standard chips goes to custom field
+  const standard = [...document.querySelectorAll('#talles-grid .talle-chip')].map(b => b.dataset.t);
+  const custom   = arr.filter(t => !standard.includes(t));
+  document.getElementById('ed-talles-custom').value = custom.join(', ');
+}
+
+/* ════════════════════════════════════════
+   DROP HERO MEDIA
+════════════════════════════════════════ */
+let _dropType = 'video';
+
+function setDropType(type) {
+  _dropType = type;
+  document.getElementById('drop-type-video').classList.toggle('on', type==='video');
+  document.getElementById('drop-type-image').classList.toggle('on', type==='image');
+  document.getElementById('drop-video-wrap').style.display = type==='video' ? '' : 'none';
+  document.getElementById('drop-image-wrap').style.display = type==='image' ? '' : 'none';
+}
+
+function handleHeroImgUpload(input) {
+  if (!input.files[0]) return;
+  compressImg(input.files[0], 1400, 0.82, dataUrl => {
+    document.getElementById('drop-heroImg').value = dataUrl;
+    const prev = document.getElementById('drop-img-preview');
+    prev.style.backgroundImage = `url('${dataUrl}')`;
+    prev.classList.add('show');
+  });
+  input.value = '';
+}
+
+/* ════════════════════════════════════════
+   PRODUCT EDITOR
 ════════════════════════════════════════ */
 function loadDropForm() {
   document.getElementById('drop-temporada').value = db.drop.temporada || '';
   document.getElementById('drop-titulo').value    = db.drop.titulo    || '';
   document.getElementById('drop-subtitulo').value = db.drop.subtitulo || '';
   document.getElementById('drop-video').value     = db.drop.videoUrl  || '';
+  document.getElementById('drop-heroImg').value   = db.drop.heroImg   || '';
+
+  const type = db.drop.heroType || 'video';
+  setDropType(type);
+
+  // Show img preview if image type
+  if (type === 'image' && db.drop.heroImg) {
+    const prev = document.getElementById('drop-img-preview');
+    prev.style.backgroundImage = `url('${db.drop.heroImg}')`;
+    prev.classList.add('show');
+  }
   updateDropPreview();
 }
 
@@ -1036,6 +1367,8 @@ function saveDrop() {
     titulo:    document.getElementById('drop-titulo').value.trim(),
     subtitulo: document.getElementById('drop-subtitulo').value.trim(),
     videoUrl:  document.getElementById('drop-video').value.trim(),
+    heroType:  _dropType,
+    heroImg:   _dropType === 'image' ? document.getElementById('drop-heroImg').value.trim() : '',
   };
   saveDb();
   showToast('Drop actualizado ✓', 'success');

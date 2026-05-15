@@ -350,6 +350,212 @@
     .footer-index { grid-template-columns: repeat(2, 1fr); gap: 28px; }
     footer { padding: 48px 20px 24px; }
   }
+  /* ── PRODUCT DETAIL MODAL ── */
+  #detail-overlay {
+    position: fixed; inset: 0;
+    z-index: 200;
+    background: rgba(13,13,13,0.55);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(4px);
+  }
+  #detail-overlay.active { display: flex; }
+
+  #detail-modal {
+    background: var(--bg);
+    width: 100%; max-width: 900px;
+    max-height: 92vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    overflow: hidden;
+    position: relative;
+    animation: detailIn 0.2s cubic-bezier(0.34,1.46,0.64,1);
+  }
+  @keyframes detailIn {
+    from { opacity:0; transform: scale(0.96) translateY(6px); }
+    to   { opacity:1; transform: scale(1) translateY(0); }
+  }
+
+  #detail-close {
+    position: absolute; top: 14px; right: 14px; z-index: 10;
+    width: 28px; height: 28px; border-radius: 50%;
+    background: rgba(240,237,230,0.9); border: none;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+  }
+  #detail-close:hover { background: var(--bg); }
+
+  /* — carousel — */
+  #detail-carousel {
+    position: relative;
+    background: var(--panel);
+    overflow: hidden;
+    min-height: 400px;
+  }
+  .detail-slide {
+    position: absolute; inset: 0;
+    opacity: 0; transition: opacity 0.28s ease;
+  }
+  .detail-slide.active { opacity: 1; }
+  .detail-slide img {
+    width: 100%; height: 100%;
+    object-fit: cover; display: block;
+  }
+  .detail-slide.no-img {
+    display: flex; align-items: center; justify-content: center;
+    background: var(--panel);
+  }
+
+  .c-nav-btn {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    width: 30px; height: 30px; border-radius: 50%;
+    background: rgba(240,237,230,0.85); border: none;
+    cursor: pointer; z-index: 5;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s;
+  }
+  .c-nav-btn:hover { background: var(--bg); }
+  .c-nav-btn.hidden { display: none; }
+  #c-prev { left: 10px; }
+  #c-next { right: 10px; }
+
+  .c-dots {
+    position: absolute; bottom: 10px; left: 0; right: 0;
+    display: flex; justify-content: center; gap: 5px; z-index: 5;
+  }
+  .c-dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: rgba(13,13,13,0.22); cursor: pointer;
+    transition: background 0.15s;
+  }
+  .c-dot.on { background: var(--dark); }
+
+  /* — info panel — */
+  #detail-info {
+    padding: 32px 28px 28px;
+    overflow-y: auto;
+    display: flex; flex-direction: column; gap: 0;
+  }
+
+  .d-cat {
+    font-size: 10px; font-weight: 400; letter-spacing: 0.1em;
+    text-transform: uppercase; color: rgba(13,13,13,0.38);
+    margin-bottom: 8px;
+  }
+  .d-nombre {
+    font-size: clamp(18px, 2.5vw, 24px); font-weight: 300;
+    letter-spacing: -0.02em; line-height: 1.15;
+    margin-bottom: 6px; color: var(--dark);
+  }
+  .d-precio {
+    font-size: 15px; font-weight: 300; color: var(--dark);
+    margin-bottom: 20px;
+  }
+  .d-divider { height: 0.5px; background: rgba(13,13,13,0.1); margin: 14px 0; }
+  .d-section-lbl {
+    font-size: 10px; font-weight: 400; letter-spacing: 0.09em;
+    text-transform: uppercase; color: rgba(13,13,13,0.4);
+    margin-bottom: 10px;
+  }
+
+  /* colors */
+  .d-color-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .d-color-item { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .d-swatch {
+    width: 26px; height: 26px; border-radius: 50%;
+    cursor: pointer; border: 2px solid transparent;
+    transition: border-color 0.15s, transform 0.12s;
+  }
+  .d-swatch:hover { transform: scale(1.1); }
+  .d-swatch.on { border-color: var(--dark); }
+  .d-swatch-name {
+    font-size: 9px; letter-spacing: 0.04em;
+    color: rgba(13,13,13,0.45); max-width: 36px;
+    text-align: center; overflow: hidden;
+    white-space: nowrap; text-overflow: ellipsis;
+  }
+
+  /* sizes */
+  .d-size-row { display: flex; flex-wrap: wrap; gap: 5px; }
+  .d-size-btn {
+    padding: 6px 12px;
+    border: 0.5px solid rgba(13,13,13,0.18);
+    background: transparent;
+    font-family: var(--font-sans);
+    font-size: 11px; color: var(--dark);
+    cursor: pointer; border-radius: 2px;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+  }
+  .d-size-btn:hover { border-color: rgba(13,13,13,0.35); }
+  .d-size-btn.on { background: var(--dark); color: white; border-color: var(--dark); }
+
+  /* desc / material */
+  .d-desc-text {
+    font-size: 12px; font-weight: 300; line-height: 1.75;
+    color: rgba(13,13,13,0.68);
+  }
+  .d-mat-toggle {
+    font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase;
+    color: rgba(13,13,13,0.4); background: none; border: none;
+    font-family: var(--font-sans); cursor: pointer;
+    text-decoration: underline; padding: 0;
+  }
+  .d-mat-body {
+    font-size: 11px; font-weight: 300; line-height: 1.65;
+    color: rgba(13,13,13,0.55); margin-top: 8px; display: none;
+  }
+  .d-mat-body.open { display: block; }
+
+  /* size guide */
+  .d-guide-toggle {
+    font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase;
+    color: rgba(13,13,13,0.4); background: none; border: none;
+    font-family: var(--font-sans); cursor: pointer;
+    text-decoration: underline; padding: 0; display: block; margin-top: 8px;
+  }
+  .d-guide-body {
+    margin-top: 10px; display: none;
+    border: 0.5px solid rgba(13,13,13,0.1);
+    font-size: 11px; font-weight: 300;
+    line-height: 1.6; color: rgba(13,13,13,0.6);
+    white-space: pre-wrap; padding: 10px 12px;
+    background: rgba(13,13,13,0.02);
+  }
+  .d-guide-body.open { display: block; }
+
+  /* add to cart */
+  .d-add-row {
+    margin-top: auto; padding-top: 20px;
+  }
+  .d-add-btn {
+    width: 100%; padding: 13px 24px;
+    background: var(--dark); color: white; border: none;
+    font-family: var(--font-sans); font-size: 11px; font-weight: 400;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    cursor: pointer; border-radius: 999px;
+    transition: background 0.2s;
+  }
+  .d-add-btn:hover { background: rgba(13,13,13,0.82); }
+  .d-add-btn:disabled { background: rgba(13,13,13,0.18); cursor: not-allowed; }
+  .d-add-btn.added { background: rgba(13,13,13,0.6); }
+
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    25%      { transform: translateX(-4px); }
+    75%      { transform: translateX(4px); }
+  }
+
+  /* responsive modal */
+  @media (max-width: 700px) {
+    #detail-modal {
+      grid-template-columns: 1fr;
+      grid-template-rows: 55vw 1fr;
+      max-height: 95vh;
+    }
+    #detail-carousel { min-height: unset; }
+  }
 </style>
 </head>
 <body>
@@ -460,19 +666,8 @@ async function loadProducts() {
   // 1. Intentar API
   try {
     const res = await fetch('/api/entries');
-    if (res.ok) {
-      db = await res.json();
-      // Verificar que llegó un objeto válido (no un string por doble-stringify)
-      if (typeof db !== 'object' || db === null || Array.isArray(db)) {
-        console.warn('[orfeo] /api/entries devolvió un formato inesperado:', typeof db);
-        db = null;
-      }
-    } else {
-      console.warn('[orfeo] /api/entries respondió con status:', res.status);
-    }
-  } catch(e) {
-    console.error('[orfeo] fetch /api/entries falló:', e.message);
-  }
+    if (res.ok) db = await res.json();
+  } catch(e) {}
 
   // 2. Fallback: localStorage
   if (!db) {
@@ -492,13 +687,10 @@ async function loadProducts() {
 
 /* ── FILTER ── */
 function setFilter(filter, btn) {
-  // Actualizar estado y UI siempre; renderizar solo si ya cargó
   currentFilter = filter;
   document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   if (productsLoaded) renderProducts();
-  // Si todavía está cargando, boot() llamará renderProducts() con el
-  // currentFilter ya seteado por este click — sin race condition.
 }
 
 function filterProducts() {
@@ -528,7 +720,7 @@ function renderProducts() {
   }
 
   grid.innerHTML = filtered.map(p => `
-    <div class="product-card">
+    <div class="product-card" onclick='openDetail(${JSON.stringify(p).replace(/'/g,"&#39;")})' style="cursor:pointer">
       <div class="product-img">
         <img src="${escHtml(p.img)}" alt="${escHtml(p.nombre)}" onerror="this.style.display='none'">
         ${!p.stock ? '<span class="product-badge agotado">Agotado</span>' : ''}
@@ -537,7 +729,7 @@ function renderProducts() {
         <span class="product-cat">${escHtml(p.categoria)}</span>
         <span class="product-name">${escHtml(p.nombre)}</span>
         <span class="product-price">$${Number(p.precio).toLocaleString('es-AR')}</span>
-        ${p.stock !== false ? `<button class="product-add" onclick='handleAdd(this, ${JSON.stringify(p)})'>+ Agregar</button>` : ''}
+        ${p.stock !== false ? `<button class="product-add" onclick='event.stopPropagation();handleAdd(this,${JSON.stringify(p).replace(/'/g,"&#39;")})'>+ Agregar</button>` : ''}
       </div>
     </div>
   `).join('');
@@ -579,6 +771,138 @@ function handleAdd(btn, product) {
 
 updateCartNav();
 
+updateCartNav();
+
+/* ── PRODUCT DETAIL MODAL ── */
+let _dp = null, _ci = 0, _sc = null, _st = null;
+
+function openDetail(p) {
+  _dp = p; _ci = 0; _sc = null; _st = null;
+  const imgs = (p.imgs && p.imgs.length > 0) ? p.imgs : (p.img ? [p.img] : []);
+
+  document.getElementById('detail-slides').innerHTML = imgs.map((src, i) => `
+    <div class="detail-slide ${i===0?'active':''}">
+      <img src="${escHtml(src)}" alt="${escHtml(p.nombre)}" onerror="this.style.display='none'">
+    </div>
+  `).join('');
+
+  document.getElementById('c-dots').innerHTML = imgs.length > 1
+    ? imgs.map((_,i) => `<div class="c-dot ${i===0?'on':''}" onclick="carouselGo(${i})"></div>`).join('') : '';
+  document.getElementById('c-prev').classList.toggle('hidden', imgs.length <= 1);
+  document.getElementById('c-next').classList.toggle('hidden', imgs.length <= 1);
+
+  document.getElementById('d-cat').textContent    = p.categoria || '';
+  document.getElementById('d-nombre').textContent = p.nombre    || '';
+  document.getElementById('d-precio').textContent = '$' + Number(p.precio).toLocaleString('es-AR');
+
+  // Colors
+  const colors = p.colores || [];
+  const cW = document.getElementById('d-colors-wrap');
+  if (colors.length > 0) {
+    cW.style.display = '';
+    document.getElementById('d-colors').innerHTML = colors.map((c,i) => `
+      <div class="d-color-item">
+        <div class="d-swatch" style="background:${escHtml(c.hex||'#ccc')}"
+          onclick="detailSelectColor(${i})" title="${escHtml(c.nombre||'')}"></div>
+        <span class="d-swatch-name">${escHtml(c.nombre||'')}</span>
+      </div>`).join('');
+  } else cW.style.display = 'none';
+
+  // Sizes
+  const sizes = p.talles || [];
+  const sW = document.getElementById('d-sizes-wrap');
+  if (sizes.length > 0) {
+    sW.style.display = '';
+    document.getElementById('d-sizes').innerHTML = sizes.map((t,i) => `
+      <button class="d-size-btn" onclick="detailSelectSize(${i},${JSON.stringify(t)})">${escHtml(t)}</button>`).join('');
+  } else sW.style.display = 'none';
+
+  // Desc
+  const dW = document.getElementById('d-desc-wrap');
+  if (p.descripcion) { dW.style.display = ''; document.getElementById('d-desc').textContent = p.descripcion; }
+  else dW.style.display = 'none';
+
+  // Material
+  const mW = document.getElementById('d-mat-wrap');
+  if (p.materialInfo) { mW.style.display = ''; const mb = document.getElementById('d-mat-body'); mb.textContent = p.materialInfo; mb.classList.remove('open'); }
+  else mW.style.display = 'none';
+
+  // Size guide
+  const gW = document.getElementById('d-guide-wrap');
+  if (p.guiaTalles) { gW.style.display = ''; const gb = document.getElementById('d-guide-body'); gb.textContent = p.guiaTalles; gb.classList.remove('open'); }
+  else gW.style.display = 'none';
+
+  const addBtn = document.getElementById('d-add-btn');
+  addBtn.textContent = p.stock === false ? 'Agotado' : '+ Agregar al carrito';
+  addBtn.disabled = p.stock === false;
+  addBtn.classList.remove('added');
+
+  document.getElementById('detail-overlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDetail() {
+  document.getElementById('detail-overlay').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+function carouselMove(dir) {
+  const slides = document.querySelectorAll('.detail-slide');
+  if (slides.length <= 1) return;
+  carouselGo((_ci + dir + slides.length) % slides.length);
+}
+
+function carouselGo(idx) {
+  const slides = document.querySelectorAll('.detail-slide');
+  const dots   = document.querySelectorAll('.c-dot');
+  slides[_ci]?.classList.remove('active'); dots[_ci]?.classList.remove('on');
+  _ci = idx;
+  slides[_ci]?.classList.add('active');   dots[_ci]?.classList.add('on');
+}
+
+function detailSelectColor(ci) {
+  _sc = ci;
+  document.querySelectorAll('.d-swatch').forEach((el,i) => el.classList.toggle('on', i===ci));
+}
+
+function detailSelectSize(ti, val) {
+  _st = val;
+  document.querySelectorAll('.d-size-btn').forEach((el,i) => el.classList.toggle('on', i===ti));
+}
+
+function detailAdd() {
+  if (!_dp) return;
+  const talles = _dp.talles || [], colors = _dp.colores || [];
+  if (talles.length > 0 && _st === null) {
+    const w = document.getElementById('d-sizes-wrap');
+    w.style.animation='none'; w.offsetHeight; w.style.animation='shake 0.3s'; return;
+  }
+  if (colors.length > 0 && _sc === null) {
+    const w = document.getElementById('d-colors-wrap');
+    w.style.animation='none'; w.offsetHeight; w.style.animation='shake 0.3s'; return;
+  }
+  const item = { ..._dp, qty:1,
+    selectedTalle: _st||null,
+    selectedColor: _sc!==null ? (colors[_sc]?.nombre||null) : null };
+  const cart = getCart();
+  const ex = cart.find(x => x.id===item.id && x.selectedTalle===item.selectedTalle && x.selectedColor===item.selectedColor);
+  if (ex) ex.qty+=1; else cart.push(item);
+  saveCart(cart);
+  const btn = document.getElementById('d-add-btn');
+  btn.textContent = '✓ Agregado'; btn.classList.add('added');
+  setTimeout(() => { btn.textContent='+ Agregar al carrito'; btn.classList.remove('added'); }, 1800);
+}
+
+document.getElementById('detail-overlay').addEventListener('click', e => {
+  if (e.target===document.getElementById('detail-overlay')) closeDetail();
+});
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('detail-overlay').classList.contains('active')) return;
+  if (e.key==='Escape') closeDetail();
+  if (e.key==='ArrowLeft') carouselMove(-1);
+  if (e.key==='ArrowRight') carouselMove(1);
+});
+
 /* ── INIT ── */
 let productsLoaded = false;
 
@@ -599,5 +923,71 @@ async function boot() {
 }
 boot();
 </script>
+<!-- ── PRODUCT DETAIL MODAL ── -->
+<div id="detail-overlay">
+  <div id="detail-modal">
+    <button id="detail-close" onclick="closeDetail()" title="Cerrar">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+
+    <!-- carousel -->
+    <div id="detail-carousel">
+      <div id="detail-slides"></div>
+      <button class="c-nav-btn hidden" id="c-prev" onclick="carouselMove(-1)">
+        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <button class="c-nav-btn hidden" id="c-next" onclick="carouselMove(1)">
+        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+      <div class="c-dots" id="c-dots"></div>
+    </div>
+
+    <!-- info -->
+    <div id="detail-info">
+      <span class="d-cat" id="d-cat"></span>
+      <h2 class="d-nombre" id="d-nombre"></h2>
+      <span class="d-precio" id="d-precio"></span>
+
+      <div id="d-colors-wrap" style="display:none">
+        <div class="d-divider"></div>
+        <p class="d-section-lbl" id="d-color-lbl">Color</p>
+        <div class="d-color-row" id="d-colors"></div>
+      </div>
+
+      <div id="d-sizes-wrap" style="display:none">
+        <div class="d-divider"></div>
+        <p class="d-section-lbl">Talle</p>
+        <div class="d-size-row" id="d-sizes"></div>
+      </div>
+
+      <div id="d-desc-wrap" style="display:none">
+        <div class="d-divider"></div>
+        <p class="d-desc-text" id="d-desc"></p>
+      </div>
+
+      <div id="d-mat-wrap" style="display:none">
+        <div class="d-divider"></div>
+        <button class="d-mat-toggle" onclick="document.getElementById('d-mat-body').classList.toggle('open')">
+          Material &amp; Cuidado ↓
+        </button>
+        <p class="d-mat-body" id="d-mat-body"></p>
+      </div>
+
+      <div id="d-guide-wrap" style="display:none">
+        <button class="d-guide-toggle" onclick="document.getElementById('d-guide-body').classList.toggle('open')">
+          Guía de talles ↓
+        </button>
+        <div class="d-guide-body" id="d-guide-body"></div>
+      </div>
+
+      <div class="d-add-row">
+        <button class="d-add-btn" id="d-add-btn" onclick="detailAdd()">+ Agregar al carrito</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
