@@ -720,7 +720,7 @@ function renderProducts() {
   }
 
   grid.innerHTML = filtered.map(p => `
-    <div class="product-card" onclick='openDetail(${JSON.stringify(p).replace(/'/g,"&#39;")})' style="cursor:pointer">
+    <div class="product-card" onclick="openDetail(${p.id})" style="cursor:pointer">
       <div class="product-img">
         <img src="${escHtml(p.img)}" alt="${escHtml(p.nombre)}" onerror="this.style.display='none'">
         ${!p.stock ? '<span class="product-badge agotado">Agotado</span>' : ''}
@@ -729,7 +729,7 @@ function renderProducts() {
         <span class="product-cat">${escHtml(p.categoria)}</span>
         <span class="product-name">${escHtml(p.nombre)}</span>
         <span class="product-price">$${Number(p.precio).toLocaleString('es-AR')}</span>
-        ${p.stock !== false ? `<button class="product-add" onclick='event.stopPropagation();handleAdd(this,${JSON.stringify(p).replace(/'/g,"&#39;")})'>+ Agregar</button>` : ''}
+        ${p.stock !== false ? `<button class="product-add" onclick="event.stopPropagation();handleAdd(this,${p.id})">+ Agregar</button>` : ''}
       </div>
     </div>
   `).join('');
@@ -758,7 +758,9 @@ function updateCartNav() {
   if (el) el.textContent = `Carrito: ${total}`;
 }
 
-function handleAdd(btn, product) {
+function handleAdd(btn, productId) {
+  const product = allProducts.find(p => p.id === productId);
+  if (!product) return;
   const cart = getCart();
   const existing = cart.find(i => i.id === product.id);
   if (existing) existing.qty += 1;
@@ -776,7 +778,9 @@ updateCartNav();
 /* ── PRODUCT DETAIL MODAL ── */
 let _dp = null, _ci = 0, _sc = null, _st = null;
 
-function openDetail(p) {
+function openDetail(productId) {
+  const p = allProducts.find(x => x.id === productId);
+  if (!p) return;
   _dp = p; _ci = 0; _sc = null; _st = null;
   const imgs = (p.imgs && p.imgs.length > 0) ? p.imgs : (p.img ? [p.img] : []);
 
@@ -814,7 +818,7 @@ function openDetail(p) {
   if (sizes.length > 0) {
     sW.style.display = '';
     document.getElementById('d-sizes').innerHTML = sizes.map((t,i) => `
-      <button class="d-size-btn" onclick="detailSelectSize(${i},${JSON.stringify(t)})">${escHtml(t)}</button>`).join('');
+      <button class="d-size-btn" onclick="detailSelectSize(${i})">${escHtml(t)}</button>`).join('');
   } else sW.style.display = 'none';
 
   // Desc
@@ -865,8 +869,8 @@ function detailSelectColor(ci) {
   document.querySelectorAll('.d-swatch').forEach((el,i) => el.classList.toggle('on', i===ci));
 }
 
-function detailSelectSize(ti, val) {
-  _st = val;
+function detailSelectSize(ti) {
+  _st = (_dp.talles || [])[ti] || null;
   document.querySelectorAll('.d-size-btn').forEach((el,i) => el.classList.toggle('on', i===ti));
 }
 
