@@ -812,7 +812,6 @@ updateCartNav();
           </div>
           <span class="product-name">${p.nombre}</span>
           <span class="product-price">$${Number(p.precio).toLocaleString('es-AR')}</span>
-          <button class="product-add" onclick="event.stopPropagation();homeAdd(this,${p.id})" style="margin-top:6px">+ Agregar</button>
         </div>
       `).join('');
     }

@@ -47,25 +47,18 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;height:var(--nav-h);display:
 #products-count{font-size:11px;font-weight:300;opacity:.4;}
 .shop-main{padding:28px 36px 80px;}
 
-/* SORT + VIEW TOGGLE */
-.shop-controls{display:flex;align-items:center;justify-content:space-between;padding:16px 36px;border-bottom:.5px solid var(--border);gap:12px;}
-.sort-select{background:none;border:.5px solid rgba(13,13,13,.2);font-family:var(--font);font-size:11px;font-weight:400;letter-spacing:.06em;color:var(--dark);padding:7px 12px;border-radius:999px;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(13,13,13,.3)'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px;}
-.view-toggle{display:flex;gap:6px;}
-.vt-btn{width:28px;height:28px;border:.5px solid rgba(13,13,13,.2);background:transparent;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
-.vt-btn:hover,.vt-btn.on{background:var(--dark);border-color:var(--dark);}
-.vt-btn:hover svg,.vt-btn.on svg{stroke:var(--white);}
-
-/* LISTA view */
-.shop-grid.list-view{grid-template-columns:1fr;gap:0;}
-.shop-grid.list-view .product-card{flex-direction:row;gap:20px;padding:16px 0;border-bottom:.5px solid var(--border);}
-.shop-grid.list-view .product-img{width:100px;height:133px;aspect-ratio:unset;flex-shrink:0;}
-.shop-grid.list-view .product-info{justify-content:center;}
-.shop-grid.list-view .product-name{font-size:14px;}
-
-/* BADGE nuevo */
-.badge-new{display:inline-block;font-size:9px;font-weight:400;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;border-radius:999px;border:.5px solid rgba(13,13,13,.25);color:var(--dark);margin-left:6px;vertical-align:middle;}
+/* GRID */
+.shop-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;}
 @media(max-width:1100px){.shop-grid{grid-template-columns:repeat(3,1fr);}}
 @media(max-width:760px){.shop-grid{grid-template-columns:repeat(2,1fr);gap:12px;}}
+
+/* SORT BAR */
+.sort-bar{padding:12px 36px;border-bottom:.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.sort-select{background:none;border:.5px solid rgba(13,13,13,.2);font-family:var(--font);font-size:11px;font-weight:400;letter-spacing:.06em;color:var(--dark);padding:6px 28px 6px 12px;border-radius:999px;cursor:pointer;outline:none;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(13,13,13,.3)'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;}
+#products-count{font-size:11px;font-weight:300;opacity:.4;}
+
+/* BADGE nuevo */
+.badge-new{display:inline-block;font-size:9px;font-weight:400;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;border-radius:999px;border:.5px solid rgba(13,13,13,.2);color:var(--dark);margin-left:6px;vertical-align:middle;}
 
 /* SKELETON */
 @keyframes shimmer{0%{background-position:-600px 0}100%{background-position:600px 0}}
@@ -198,7 +191,7 @@ footer{background:var(--dark);color:rgba(240,237,230,.7);padding:60px 36px 36px;
   <button class="filter-btn"        data-filter="accesorio" onclick="setFilter('accesorio',this)">Accesorios</button>
 </div>
 
-<div class="shop-controls">
+<div class="sort-bar">
   <select class="sort-select" id="sort-select" onchange="if(productsLoaded)renderProducts()">
     <option value="default">Orden por defecto</option>
     <option value="price-asc">Precio: menor a mayor</option>
@@ -206,21 +199,10 @@ footer{background:var(--dark);color:rgba(240,237,230,.7);padding:60px 36px 36px;
     <option value="newest">Más nuevos</option>
     <option value="name">Nombre A–Z</option>
   </select>
-  <div class="view-toggle">
-    <button class="vt-btn on" id="vt-grid" onclick="setView('grid')" title="Grilla">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-    </button>
-    <button class="vt-btn" id="vt-list" onclick="setView('list')" title="Lista">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-    </button>
-  </div>
+  <span id="products-count"></span>
 </div>
 
 <div class="shop-body">
-  <div class="shop-header">
-    <span class="shop-title">Colección</span>
-    <span id="products-count"></span>
-  </div>
   <main class="shop-main">
     <div class="shop-grid" id="shop-grid"></div>
   </main>
@@ -374,15 +356,6 @@ function renderError(src){
 }
 async function retry(){productsLoaded=false;allProducts=[];await loadProducts();productsLoaded=true;if(allProducts.length>0)renderProducts();}
 
-/* ── VIEW TOGGLE ── */
-let currentView='grid';
-function setView(v){
-  currentView=v;
-  document.getElementById('vt-grid').classList.toggle('on',v==='grid');
-  document.getElementById('vt-list').classList.toggle('on',v==='list');
-  document.getElementById('shop-grid').classList.toggle('list-view',v==='list');
-}
-
 /* ── FILTER + SORT ── */
 function setFilter(f,btn){currentFilter=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');if(productsLoaded)renderProducts();}
 function filterProducts(){if(productsLoaded)renderProducts();}
@@ -394,10 +367,10 @@ function getFiltered(){
     return cat&&s;
   });
   const sort=document.getElementById('sort-select').value;
-  if(sort==='price-asc') list=[...list].sort((a,b)=>a.precio-b.precio);
-  else if(sort==='price-desc') list=[...list].sort((a,b)=>b.precio-a.precio);
-  else if(sort==='newest') list=[...list].sort((a,b)=>new Date(b.fecha||0)-new Date(a.fecha||0));
-  else if(sort==='name') list=[...list].sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||''));
+  if(sort==='price-asc')list=[...list].sort((a,b)=>a.precio-b.precio);
+  else if(sort==='price-desc')list=[...list].sort((a,b)=>b.precio-a.precio);
+  else if(sort==='newest')list=[...list].sort((a,b)=>new Date(b.fecha||0)-new Date(a.fecha||0));
+  else if(sort==='name')list=[...list].sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||''));
   return list;
 }
 
@@ -418,10 +391,8 @@ function renderProducts(){
         <span class="product-cat">${esc(p.categoria)}</span>
         <span class="product-name">${esc(p.nombre)}${isNew(p)?'<span class="badge-new">Nuevo</span>':''}</span>
         <span class="product-price">$${Number(p.precio).toLocaleString('es-AR')}</span>
-        ${p.stock!==false?`<button class="product-add" onclick="event.stopPropagation();quickAdd(this,${p.id})">+ Agregar</button>`:''}
       </div>
     </div>`).join('');
-  if(currentView==='list') grid.classList.add('list-view');
 }
 
 function quickAdd(btn,id){
