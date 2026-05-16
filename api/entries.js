@@ -1,33 +1,40 @@
 const DB_KEY = 'orfeo_db';
 
 const defaultDb = {
-  products: [
-    { id:1, nombre:"Sweater Rayado Marron", precio:30000, img:"product-1.png", categoria:"sweater", stock:true, destacado:true, descripcion:"", fecha:"2026-01-01" },
-    { id:2, nombre:"Sweater Azul Splash",   precio:40000, img:"product-2.png", categoria:"sweater", stock:true, destacado:true, descripcion:"", fecha:"2026-01-01" },
-    { id:3, nombre:"Sweater Double Azul",   precio:25000, img:"product-3.png", categoria:"sweater", stock:true, destacado:true, descripcion:"", fecha:"2026-01-01" },
-    { id:4, nombre:"Sweater Rayado Azul",   precio:30000, img:"product-4.png", categoria:"sweater", stock:true, destacado:true, descripcion:"", fecha:"2026-01-01" },
-  ],
-  drop:     { temporada:"SS2026", titulo:"Nuevo Drop", subtitulo:"La nueva colección ya está disponible.", videoUrl:"img/drop.mp4" },
+  products: [],
+  drop:     { temporada:"SS2026", titulo:"Nuevo Drop", subtitulo:"La nueva colección ya está disponible.", videoUrl:"img/drop.mp4", heroType:"video", heroImg:"" },
   settings: { email:"hola@orfeo.ar", instagram:"#", tiktok:"#", whatsapp:"#" },
-  nextId: 5
+  nextId: 1
 };
 
 async function kvGet(key) {
   const url   = process.env.KV_REST_API_URL;
   const token = process.env.KV_REST_API_TOKEN;
   if (!url || !token) return null;
-  const res = await fetch(`${url}/get/${encodeURIComponent(key)}`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-  const json = await res.json();
-  if (!json.result) return null;
-  return JSON.parse(json.result);
+  try {
+    const res  = await fetch(`${url}/get/${encodeURIComponent(key)}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const json = await res.json();
+    if (!json.result) return null;
+
+    // result might be a string (need one parse) or already an object
+    let parsed = json.result;
+    if (typeof parsed === 'string') parsed = JSON.parse(parsed);
+    // legacy: double-stringified — parse again if still a string
+    if (typeof parsed === 'string') parsed = JSON.parse(parsed);
+    return parsed;
+  } catch(e) {
+    console.error('kvGet error:', e.message);
+    return null;
+  }
 }
 
 async function kvSet(key, value) {
   const url   = process.env.KV_REST_API_URL;
   const token = process.env.KV_REST_API_TOKEN;
   if (!url || !token) throw new Error('Missing KV env vars');
+  // Store as single JSON string — compatible with kvGet's JSON.parse(json.result)
   const res = await fetch(`${url}/set/${encodeURIComponent(key)}`, {
     method: 'POST',
     headers: {
@@ -47,10 +54,22 @@ module.exports = async function handler(req, res) {
 
   if (req.method === 'GET') {
     try {
-      const db = await kvGet(DB_KEY);
+      let db = await kvGet(DB_KEY);
+
+      // Final safety: if still a string after kvGet, parse one more time
+      if (typeof db === 'string') {
+        try { db = JSON.parse(db); } catch(e) { db = null; }
+      }
+
+      // Validate structure
+      if (!db || typeof db !== 'object' || !Array.isArray(db.products)) {
+        console.warn('KV returned invalid structure, using defaultDb');
+        db = null;
+      }
+
       return res.status(200).json(db || defaultDb);
     } catch (e) {
-      console.error('KV get error:', e.message);
+      console.error('GET error:', e.message);
       return res.status(200).json(defaultDb);
     }
   }
@@ -63,7 +82,7 @@ module.exports = async function handler(req, res) {
       await kvSet(DB_KEY, req.body);
       return res.status(200).json({ ok: true });
     } catch (e) {
-      console.error('KV set error:', e.message);
+      console.error('PUT error:', e.message);
       return res.status(500).json({ error: 'Storage error' });
     }
   }
@@ -73,4 +92,4 @@ module.exports = async function handler(req, res) {
 
 module.exports.config = {
   api: { bodyParser: { sizeLimit: '4mb' } }
-}
+};
