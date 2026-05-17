@@ -180,10 +180,18 @@ footer{background:var(--dark);padding:52px 32px 32px;}
 .footer-copy{font-size:11px;font-weight:300;color:rgba(240,237,230,.2);}
 .footer-logo{font-size:12px;font-weight:400;letter-spacing:.08em;color:rgba(240,237,230,.2);}
 
+/* FADE IN */
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.info-col{animation:fadeUp .4s ease both .1s;}
+
+/* ZOOM en imagen */
+.main-img-col{overflow:hidden;cursor:zoom-in;}
+.main-img-col.zoomed{cursor:zoom-out;}
+.main-slide img{transform-origin:var(--mx,50%) var(--my,50%);transition:transform .3s ease,opacity .25s ease;}
+.main-img-col.zoomed .main-slide.on img{transform:scale(2);}
+
 /* ── LOADING ── */
 .page-msg{display:flex;align-items:center;justify-content:center;min-height:60vh;font-size:12px;font-weight:300;color:var(--muted);letter-spacing:.06em;}
-
-/* ── MOBILE ── */
 @media(max-width:900px){
   .product-layout{grid-template-columns:1fr;grid-template-rows:auto;}
   .thumbs-col{flex-direction:row;border-right:none;border-bottom:.5px solid var(--border);padding:12px 16px;overflow-x:auto;}
@@ -487,18 +495,36 @@ function renderRelated(all,current){
     </div>`).join('');
 }
 
+/* ── ZOOM ── */
+(function(){
+  const col=document.querySelector('.main-img-col')||document;
+  document.addEventListener('click',e=>{
+    const c=e.target.closest('.main-img-col');
+    if(!c)return;
+    c.classList.toggle('zoomed');
+  });
+  document.addEventListener('mousemove',e=>{
+    const c=e.target.closest('.main-img-col');
+    if(!c||!c.classList.contains('zoomed'))return;
+    const r=c.getBoundingClientRect();
+    const x=((e.clientX-r.left)/r.width*100).toFixed(1)+'%';
+    const y=((e.clientY-r.top)/r.height*100).toFixed(1)+'%';
+    c.style.setProperty('--mx',x);c.style.setProperty('--my',y);
+    c.querySelectorAll('.main-slide img').forEach(img=>{img.style.transformOrigin=`${x} ${y}`;});
+  });
+})();
+
 /* ── BOOT ── */
 (async()=>{
   const id=parseInt(new URLSearchParams(window.location.search).get('id'));
   if(!id){document.getElementById('page-content').innerHTML='<div class="page-msg">Producto no encontrado.</div>';return;}
 
   let db=null;
-  try{const r=await fetch('/api/entries');if(r.ok){const p=await r.json();if(p&&Array.isArray(p.products))db=p;}}catch{}
+  try{const r=await fetch('/api/entries');if(r.ok){const p=await r.json();if(p&&p.products)db=p;}}catch{}
   if(!db){try{const raw=localStorage.getItem('orfeo_db');if(raw)db=JSON.parse(raw);}catch{}}
 
   if(!db?.products){document.getElementById('page-content').innerHTML='<div class="page-msg">Error al cargar.</div>';return;}
 
-  // settings
   if(db.settings){
     const s=db.settings;
     if(s.instagram&&s.instagram!=='#')document.getElementById('lnk-ig').href=s.instagram;
