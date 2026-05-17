@@ -71,35 +71,6 @@
     align-items: start;
   }
 
-  /* ── RESUMEN EN CHECKOUT (sidebar) ── */
-  .order-summary {
-    background: rgba(255,255,255,0.04);
-    border: 0.5px solid rgba(255,255,255,0.08);
-    padding: 20px;
-    margin-bottom: 28px;
-  }
-  .summary-title {
-    font-size: 10px; font-weight: 400; letter-spacing: 0.1em;
-    text-transform: uppercase; color: rgba(255,255,255,0.3); margin-bottom: 14px;
-  }
-  .summary-item {
-    display: flex; justify-content: space-between; align-items: baseline;
-    gap: 12px; padding: 6px 0; border-bottom: 0.5px solid rgba(255,255,255,0.05);
-  }
-  .summary-item:last-of-type { border-bottom: none; }
-  .summary-item-name { font-size: 12px; font-weight: 300; color: rgba(255,255,255,0.6); flex: 1; }
-  .summary-item-qty  { font-size: 11px; font-weight: 300; color: rgba(255,255,255,0.25); }
-  .summary-item-price{ font-size: 12px; font-weight: 300; color: rgba(255,255,255,0.55); white-space:nowrap; }
-  .summary-total {
-    display: flex; justify-content: space-between; padding-top: 12px; margin-top: 8px;
-    border-top: 0.5px solid rgba(255,255,255,0.1);
-  }
-  .summary-total-label { font-size: 11px; font-weight: 400; letter-spacing: 0.06em; text-transform: uppercase; color: rgba(255,255,255,0.4); }
-  .summary-total-value { font-size: 14px; font-weight: 300; color: var(--white); }
-
-  /* email error */
-  .email-error { font-size: 11px; color: rgba(255,120,100,0.85); margin-top: 4px; display: none; }
-
   /* ── IZQUIERDA: ITEMS ── */
   .cart-side {
     padding: 52px 48px 80px;
@@ -504,16 +475,6 @@
   <div class="checkout-side">
     <p class="checkout-title">Datos del pedido</p>
 
-    <!-- RESUMEN -->
-    <div class="order-summary" id="order-summary">
-      <p class="summary-title">Resumen</p>
-      <div id="summary-items"></div>
-      <div class="summary-total">
-        <span class="summary-total-label">Total</span>
-        <span class="summary-total-value" id="summary-total">$0</span>
-      </div>
-    </div>
-
     <div class="form-row">
       <div class="form-group">
         <label class="form-label">Nombre</label>
@@ -527,8 +488,7 @@
 
     <div class="form-group">
       <label class="form-label">Email</label>
-      <input class="form-input" id="f-email" type="email" placeholder="juan@mail.com" oninput="validateEmail()">
-      <p class="email-error" id="email-error">Email inválido</p>
+      <input class="form-input" id="f-email" type="email" placeholder="juan@mail.com">
     </div>
 
     <div class="form-group">
@@ -600,6 +560,10 @@
 </div>
 
 <script>
+  function esc(str) {
+    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
   const CART_KEY = 'orfeo_cart';
   const DB_KEY   = 'orfeo_db';
 
@@ -628,7 +592,6 @@
   function saveCart(cart) {
     localStorage.setItem(CART_KEY, JSON.stringify(cart));
     renderCart();
-    renderSummary();
   }
 
   function renderCart() {
@@ -740,10 +703,8 @@
       return;
     }
     const f = getFormData();
-    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email);
-    if (!validate(f) || !emailOk) {
-      if (!emailOk && f.email) document.getElementById('email-error').style.display = 'block';
-      errEl.textContent = !emailOk ? 'Revisá el email ingresado.' : 'Completá todos los campos obligatorios.';
+    if (!validate(f)) {
+      errEl.textContent = 'Completá todos los campos obligatorios.';
       errEl.classList.add('show');
       return;
     }
@@ -805,37 +766,9 @@
     if (e.key === 'Escape') closePreview();
   });
 
-  function renderSummary() {
-    const cart = getCart();
-    const items = document.getElementById('summary-items');
-    const totalEl = document.getElementById('summary-total');
-    if (!items) return;
-    if (cart.length === 0) {
-      items.innerHTML = '<p class="summary-item-name" style="opacity:.4;padding:4px 0;">Carrito vacío</p>';
-      if (totalEl) totalEl.textContent = '$0';
-      return;
-    }
-    items.innerHTML = cart.map(i => `
-      <div class="summary-item">
-        <span class="summary-item-name">${esc(i.nombre)}</span>
-        <span class="summary-item-qty">×${i.qty}</span>
-        <span class="summary-item-price">$${Number(i.precio * i.qty).toLocaleString('es-AR')}</span>
-      </div>`).join('');
-    const total = cart.reduce((s, i) => s + i.precio * i.qty, 0);
-    if (totalEl) totalEl.textContent = '$' + total.toLocaleString('es-AR');
-  }
-
-  function validateEmail() {
-    const val = document.getElementById('f-email').value.trim();
-    const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
-    const errEl = document.getElementById('email-error');
-    if (errEl) errEl.style.display = val && !ok ? 'block' : 'none';
-    return ok || !val;
-  }
 
   // ── INIT ──
   renderCart();
-  renderSummary();
 </script>
 </body>
 </html>
