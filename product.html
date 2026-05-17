@@ -374,7 +374,6 @@ function renderProduct(p){
   document.getElementById('bc-name').textContent=p.nombre;
 
   const imgs=(p.imgs&&p.imgs.length>0)?p.imgs:(p.img?[p.img]:[]);
-  buildGallery(imgs.length?imgs:['']);
 
   const isNew=p.fecha&&(Date.now()-new Date(p.fecha).getTime())<7*24*60*60*1000;
   const colores=p.colores||[];
