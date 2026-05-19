@@ -460,7 +460,7 @@
 </nav>
 
 <!-- ── PÁGINA ── -->
-<div class="page">
+<div class="page" id="page-content">
 
   <!-- ITEMS -->
   <div class="cart-side">
@@ -520,13 +520,9 @@
     <p class="form-error" id="form-error">Completá todos los campos obligatorios.</p>
 
     <div class="submit-group">
-      <button class="btn-send btn-ig" onclick="sendOrder('ig')">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
-        Enviar pedido por Instagram
-      </button>
-      <button class="btn-send btn-email" onclick="sendOrder('email')">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-        Enviar por email
+      <button class="btn-send btn-ig" id="btn-submit" onclick="sendOrder()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Enviar pedido
       </button>
     </div>
   </div>
@@ -534,31 +530,7 @@
 </div>
 
 <!-- ── ORDER PREVIEW MODAL ── -->
-<div id="order-preview">
-  <div class="preview-card">
-    <div class="preview-header">
-      <span class="preview-header-title">Revisá tu pedido</span>
-      <button class="preview-close" onclick="closePreview()">×</button>
-    </div>
-    <div class="preview-body">
-      <span class="preview-sublabel">Mensaje que se va a enviar</span>
-      <textarea class="preview-text" id="preview-text-area" readonly></textarea>
-      <button class="preview-copy-btn" id="preview-copy-btn" onclick="copyPreviewText()">
-        Copiar texto
-      </button>
-    </div>
-    <div class="preview-footer">
-      <button class="preview-send-btn psb-ig" onclick="doSend('ig')">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
-        Abrir Instagram DM
-      </button>
-      <button class="preview-send-btn psb-email" onclick="doSend('email')">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-        Email
-      </button>
-    </div>
-  </div>
-</div>
+
 
 <script>
   function esc(str) {
@@ -692,9 +664,7 @@
   }
 
   // ── PREVIEW + ENVÍO ──
-  let _pendingText = '';
-
-  function sendOrder(method) {
+  async function sendOrder() {
     const cart = getCart();
     const errEl = document.getElementById('form-error');
 
@@ -703,72 +673,62 @@
       errEl.classList.add('show');
       return;
     }
+
     const f = getFormData();
-    if (!validate(f)) {
-      errEl.textContent = 'Completá todos los campos obligatorios.';
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email);
+    if (!validate(f) || !emailOk) {
+      errEl.textContent = !emailOk ? 'Revisá el email ingresado.' : 'Completá todos los campos obligatorios.';
       errEl.classList.add('show');
       return;
     }
     errEl.classList.remove('show');
 
-    _pendingText = buildOrderText(f, cart);
+    const btn = document.getElementById('btn-submit');
+    btn.textContent = 'Enviando...';
+    btn.disabled = true;
 
-    // Mostrar el modal de preview
-    document.getElementById('preview-text-area').value = _pendingText;
-    document.getElementById('preview-copy-btn').textContent = 'Copiar texto';
-    document.getElementById('preview-copy-btn').classList.remove('copied');
+    const total = cart.reduce((s, i) => s + i.precio * i.qty, 0);
 
-    // Guardar el método elegido en el botón del footer
-    document.querySelector('.psb-ig').dataset.method    = 'ig';
-    document.querySelector('.psb-email').dataset.method = 'email';
+    try {
+      const res = await fetch('/api/send-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombre:    f.nombre,
+          apellido:  f.apellido,
+          email:     f.email,
+          direccion: f.dir,
+          ciudad:    f.ciudad,
+          cp:        f.cp,
+          notas:     f.notas,
+          items:     cart,
+          total,
+        }),
+      });
 
-    // Mostrar solo el botón correspondiente o ambos
-    document.getElementById('order-preview').classList.add('open');
-    document.body.style.overflow = 'hidden';
-  }
-
-  function closePreview() {
-    document.getElementById('order-preview').classList.remove('open');
-    document.body.style.overflow = '';
-  }
-
-  function copyPreviewText() {
-    navigator.clipboard.writeText(_pendingText).then(() => {
-      const btn = document.getElementById('preview-copy-btn');
-      btn.textContent = '✓ Copiado';
-      btn.classList.add('copied');
-      setTimeout(() => {
-        btn.textContent = 'Copiar texto';
-        btn.classList.remove('copied');
-      }, 2000);
-    }).catch(() => {
-      document.getElementById('preview-text-area').select();
-      document.execCommand('copy');
-    });
-  }
-
-  function doSend(method) {
-    const f = getFormData();
-    if (method === 'ig') {
-      navigator.clipboard.writeText(_pendingText).catch(() => {});
-      window.open(`https://ig.me/m/${INSTAGRAM_USER}`, '_blank');
-      closePreview();
-    } else {
-      const subject = encodeURIComponent('Pedido Orfeo — ' + f.nombre + ' ' + f.apellido);
-      const encoded = encodeURIComponent(_pendingText);
-      window.location.href = `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${encoded}`;
+      if (res.ok) {
+        // Limpiar carrito y mostrar confirmación
+        localStorage.removeItem(CART_KEY);
+        document.getElementById('page-content').innerHTML = `
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:16px;padding:40px;text-align:center;">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="color:#0d0d0d;opacity:.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <h2 style="font-size:22px;font-weight:300;letter-spacing:-.02em;color:#0d0d0d;">Pedido enviado</h2>
+            <p style="font-size:13px;font-weight:300;color:rgba(13,13,13,.5);max-width:320px;line-height:1.7;">Recibimos tu pedido. Nos vamos a comunicar con vos a la brevedad para coordinar el pago y el envío.</p>
+            <a href="shop.html" style="margin-top:8px;padding:12px 28px;background:#0d0d0d;color:#fff;font-size:11px;font-weight:400;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;border-radius:999px;">Seguir comprando</a>
+          </div>`;
+        document.getElementById('nav-cart').textContent = 'Carrito: 0';
+      } else {
+        throw new Error('Error del servidor');
+      }
+    } catch (e) {
+      btn.textContent = 'Enviar pedido';
+      btn.disabled = false;
+      errEl.textContent = 'Hubo un error al enviar. Intentá de nuevo.';
+      errEl.classList.add('show');
     }
   }
 
-  document.getElementById('order-preview').addEventListener('click', e => {
-    if (e.target === document.getElementById('order-preview')) closePreview();
-  });
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') closePreview();
-  });
-
-
-  // ── INIT ──
+    // ── INIT ──
   renderCart();
 </script>
 </body>
