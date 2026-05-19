@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FAQ</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f0ede6;--dark:#0d0d0d;--white:#ffffff;
+  --border:rgba(13,13,13,0.09);--panel:#e8e5de;--muted:rgba(13,13,13,0.38);
+  --nav-h:52px;--font:'DM Sans',sans-serif;
+}
+html,body{min-height:100%;background:var(--bg);color:var(--dark);font-family:var(--font);}
+
+/* ── NAV ── */
+nav{position:sticky;top:0;z-index:100;height:var(--nav-h);display:flex;align-items:center;justify-content:space-between;padding:0 36px;background:var(--bg);border-bottom:.5px solid var(--border);}
+.nav-left{display:flex;align-items:center;gap:20px;}
+.nav-logo{font-size:13px;font-weight:500;letter-spacing:.06em;color:var(--dark);text-decoration:none;}
+.nav-link{font-size:11px;font-weight:400;letter-spacing:.08em;text-transform:uppercase;color:var(--dark);text-decoration:none;opacity:.45;transition:opacity .2s;}
+.nav-link:hover,.nav-link.active{opacity:1;}
+.nav-right{display:flex;align-items:center;gap:20px;}
+.nav-cart{font-size:11px;font-weight:400;letter-spacing:.06em;color:var(--dark);text-decoration:none;opacity:.7;}
+
+/* ── HERO ── */
+.page-hero{padding:72px 36px 48px;border-bottom:.5px solid var(--border);}
+.page-hero-label{font-size:10px;font-weight:400;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
+.page-hero-title{font-size:clamp(36px,5vw,56px);font-weight:300;letter-spacing:-.03em;line-height:1;}
+
+/* ── LAYOUT ── */
+.faq-layout{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - var(--nav-h) - 160px);}
+
+/* ── SIDEBAR NAV ── */
+.faq-nav{padding:36px 0;border-right:.5px solid var(--border);position:sticky;top:var(--nav-h);height:calc(100vh - var(--nav-h));overflow-y:auto;}
+.faq-nav-item{display:block;padding:11px 36px;font-size:12px;font-weight:300;color:var(--muted);text-decoration:none;letter-spacing:.02em;border-left:1.5px solid transparent;transition:all .15s;cursor:pointer;background:none;border-top:none;border-right:none;border-bottom:none;width:100%;text-align:left;font-family:var(--font);}
+.faq-nav-item:hover{color:var(--dark);}
+.faq-nav-item.active{color:var(--dark);border-left-color:var(--dark);}
+
+/* ── CONTENT ── */
+.faq-content{padding:48px 52px 80px;}
+
+/* sección */
+.faq-section{display:none;}
+.faq-section.active{display:block;}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.faq-section.active{animation:fadeIn .25s ease both;}
+
+.section-title{font-size:22px;font-weight:300;letter-spacing:-.02em;margin-bottom:8px;}
+.section-lead{font-size:14px;font-weight:300;color:var(--muted);line-height:1.7;margin-bottom:36px;max-width:560px;}
+
+/* acordeones FAQ */
+.faq-group{margin-bottom:8px;}
+.faq-group-title{font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;margin-top:32px;}
+.faq-group:first-child .faq-group-title{margin-top:0;}
+
+.faq-item{border-bottom:.5px solid var(--border);}
+.faq-item:first-of-type{border-top:.5px solid var(--border);}
+.faq-q{width:100%;display:flex;align-items:center;justify-content:space-between;padding:16px 0;background:none;border:none;font-family:var(--font);font-size:14px;font-weight:300;color:var(--dark);cursor:pointer;text-align:left;gap:16px;transition:opacity .15s;}
+.faq-q:hover{opacity:.65;}
+.faq-q svg{flex-shrink:0;transition:transform .2s;opacity:.4;}
+.faq-q.open svg{transform:rotate(180deg);}
+.faq-a{display:none;padding-bottom:18px;font-size:13px;font-weight:300;line-height:1.8;color:rgba(13,13,13,.6);max-width:560px;}
+.faq-a.open{display:block;}
+
+/* about — bloques */
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);margin-bottom:40px;}
+.about-cell{background:var(--bg);padding:28px;}
+.about-cell-label{font-size:10px;font-weight:400;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.about-cell-val{font-size:22px;font-weight:300;letter-spacing:-.02em;}
+
+.about-text{font-size:14px;font-weight:300;line-height:1.85;color:rgba(13,13,13,.7);max-width:600px;margin-bottom:28px;}
+.about-text p+p{margin-top:1em;}
+
+/* tabla de envíos */
+.shipping-table{width:100%;border-collapse:collapse;margin-bottom:32px;font-size:13px;}
+.shipping-table th{text-align:left;font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:10px 14px;border-bottom:.5px solid var(--border);}
+.shipping-table td{padding:13px 14px;border-bottom:.5px solid var(--border);font-weight:300;vertical-align:top;}
+.shipping-table tr:last-child td{border-bottom:none;}
+.badge-free{display:inline-block;font-size:9px;font-weight:400;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:999px;border:.5px solid rgba(13,13,13,.2);color:var(--dark);}
+
+/* términos highlight */
+.terms-box{background:var(--panel);padding:20px 24px;margin-bottom:24px;}
+.terms-box p{font-size:13px;font-weight:300;line-height:1.8;color:rgba(13,13,13,.7);}
+.terms-box strong{font-weight:500;color:var(--dark);}
+
+/* ── FOOTER ── */
+footer{background:var(--dark);padding:52px 36px 32px;}
+.footer-index{display:grid;grid-template-columns:repeat(4,1fr);gap:36px;margin-bottom:0;}
+.footer-col-title{font-size:10px;font-weight:400;letter-spacing:.1em;text-transform:uppercase;color:rgba(240,237,230,.3);margin-bottom:12px;}
+.footer-col-links{display:flex;flex-direction:column;gap:8px;}
+.footer-col-link{font-size:12px;font-weight:300;color:rgba(240,237,230,.55);text-decoration:none;transition:color .15s;}
+.footer-col-link:hover{color:#fff;}
+.footer-bottom{display:flex;justify-content:space-between;align-items:center;border-top:.5px solid rgba(255,255,255,.07);padding-top:20px;margin-top:48px;}
+.footer-copy{font-size:11px;font-weight:300;color:rgba(240,237,230,.2);}
+.footer-logo{font-size:12px;font-weight:400;letter-spacing:.08em;color:rgba(240,237,230,.2);}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  nav{padding:0 20px;}
+  .page-hero{padding:48px 20px 36px;}
+  .faq-layout{grid-template-columns:1fr;}
+  .faq-nav{position:relative;top:0;height:auto;display:flex;flex-wrap:nowrap;overflow-x:auto;border-right:none;border-bottom:.5px solid var(--border);padding:0;}
+  .faq-nav::-webkit-scrollbar{display:none;}
+  .faq-nav-item{padding:14px 20px;border-left:none;border-bottom:1.5px solid transparent;white-space:nowrap;flex-shrink:0;}
+  .faq-nav-item.active{border-bottom-color:var(--dark);}
+  .faq-content{padding:32px 20px 60px;}
+  .about-grid{grid-template-columns:1fr;}
+  .footer-index{grid-template-columns:repeat(2,1fr);}
+  footer{padding:40px 20px 24px;}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-left">
+    <a href="index.html" class="nav-logo">Orfeo</a>
+    <a href="index.html" class="nav-link">Inicio</a>
+    <a href="shop.html" class="nav-link">Shop</a>
+  </div>
+  <div class="nav-right">
+    <a href="cart.html" class="nav-cart" id="nav-cart">Carrito: 0</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="page-hero">
+  <p class="page-hero-label">Orfeo — B2B.</p>
+  <h1 class="page-hero-title">Información</h1>
+</div>
+
+<!-- LAYOUT -->
+<div class="faq-layout">
+
+  <!-- SIDEBAR -->
+  <nav class="faq-nav" aria-label="Secciones">
+    <button class="faq-nav-item active" onclick="showSection('about')">Sobre Orfeo</button>
+    <button class="faq-nav-item" onclick="showSection('envios')">Envíos</button>
+    <button class="faq-nav-item" onclick="showSection('cambios')">Cambios y devoluciones</button>
+    <button class="faq-nav-item" onclick="showSection('terminos')">Términos</button>
+    <button class="faq-nav-item" onclick="showSection('contacto')">Contacto</button>
+  </nav>
+
+  <!-- CONTENIDO -->
+  <div class="faq-content">
+
+    <!-- ABOUT -->
+    <div class="faq-section active" id="sec-about">
+      <h2 class="section-title">Sobre Orfeo</h2>
+      <p class="section-lead">Una marca de Buenos Aires fundada en 2026 con el propósito de hacer ropa con identidad propia.</p>
+
+      <div class="about-grid">
+        <div class="about-cell">
+          <p class="about-cell-label">Fundación</p>
+          <p class="about-cell-val">2026</p>
+        </div>
+        <div class="about-cell">
+          <p class="about-cell-label">Origen</p>
+          <p class="about-cell-val">Buenos Aires</p>
+        </div>
+        <div class="about-cell">
+          <p class="about-cell-label">Colección</p>
+          <p class="about-cell-val">SS2026</p>
+        </div>
+        <div class="about-cell">
+          <p class="about-cell-label">Filosofía</p>
+          <p class="about-cell-val">Back to Basics</p>
+        </div>
+      </div>
+
+      <div class="about-text">
+        <p>Orfeo nació de la necesidad de crear prendas que duren. No colecciones descartables, sino ropa que tenga sentido usarla año tras año. Cada pieza está pensada para combinar con lo que ya tenés en el placard.</p>
+        <p>Trabajamos con proveedores locales y procesos transparentes. La primera colección, SS2026, es un punto de partida — sweaters de calidad, accesorios cuidados, y una identidad visual que habla por sí sola.</p>
+      </div>
+
+      <div class="faq-group">
+        <p class="faq-group-title">Preguntas frecuentes</p>
+
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            ¿Dónde se fabrica la ropa?
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="faq-a">Toda la ropa de Orfeo se produce en Argentina, trabajando con talleres locales de Buenos Aires.</div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            ¿Con qué materiales trabajan?
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="faq-a">Usamos materiales naturales y de calidad — algodón, lana y mezclas pensadas para durar. Los detalles específicos de cada prenda están en la página del producto.</div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            ¿Tienen local físico?
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="faq-a">Por ahora somos 100% online. Estamos trabajando en abrir un espacio físico en Buenos Aires. Seguinos en Instagram para enterarte primero.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ENVÍOS -->
+    <div class="faq-section" id="sec-envios">
+      <h2 class="section-title">Envíos</h2>
+      <p class="section-lead">Despachamos a todo el país. Los pedidos se procesan una vez coordinado el pago.</p>
+
+      <table class="shipping-table">
+        <thead>
+          <tr>
+            <th>Destino</th>
+            <th>Método</th>
+            <th>Tiempo estimado</th>
+            <th>Costo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>CABA y GBA</td>
+            <td>Mensajería / Andreani</td>
+            <td>1–3 días hábiles</td>
+            <td>A coordinar</td>
+          </tr>
+          <tr>
+            <td>Interior del país</td>
+            <td>Andreani / OCA</td>
+            <td>3–7 días hábiles</td>
+            <td>A coordinar</td>
+          </tr>
+          <tr>
+            <td>Retiro en mano</td>
+            <td>A coordinar</td>
+            <td>A convenir</td>
+            <td><span class="badge-free">Sin cargo</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="faq-group">
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            ¿Cómo sé cuándo sale mi pedido?
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="faq-a">Una vez confirmado el pago, te avisamos por el mismo canal que usaste para hacer el pedido (email o WhatsApp). Te mandamos el número de seguimiento cuando despachamos.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            ¿En cuánto tiempo procesan el pedido?
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="faq-a">Una vez recibido el pago, procesamos y despachamos en un plazo de 1 a 2 días hábiles.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            ¿Hacen envíos al exterior?
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="faq-a">Por ahora operamos únicamente en Argentina. Si estás en el exterior y querés comprar, escribinos y lo hablamos.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CAMBIOS Y DEVOLUCIONES -->
+    <div class="faq-section" id="sec-cambios">
+      <h2 class="section-title">Cambios y devoluciones</h2>
+      <p class="section-lead">Queremos que estés contento con tu compra. Si algo no está bien, lo resolvemos.</p>
+
+      <div class="terms-box">
+        <p><strong>Plazo de cambio:</strong> Tenés hasta 14 días desde que recibís el pedido para solicitar un cambio o devolución.</p>
+      </div>
+
+      <div class="faq-group">
+        <p class="faq-group-title">Condiciones</p>
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            ¿Qué condiciones tiene que tener la prenda para cambiarla?
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="faq-a">La prenda tiene que estar sin uso, con etiquetas originales y en el mismo estado en que la recibiste. No aceptamos cambios de prendas lavadas, usadas o con olores.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            ¿Cómo inicio un cambio?
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="faq-a">Escribinos a somosorfeo@gmail.com con el asunto "Cambio — [tu nombre]" indicando el motivo y qué prenda querés cambiar. Te respondemos en menos de 48 horas.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            ¿Quién paga el envío del cambio?
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="faq-a">Si el cambio es por un defecto de fabricación, nosotros cubrimos el costo del envío. Si es por talle o preferencia, el envío de vuelta corre por cuenta del comprador.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            ¿Hacen devoluciones en dinero?
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="faq-a">En caso de defecto de fábrica o error nuestro, sí hacemos devolución completa. Para cambios por talle o preferencia, ofrecemos crédito para usar en la próxima compra.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TÉRMINOS -->
+    <div class="faq-section" id="sec-terminos">
+      <h2 class="section-title">Términos y condiciones</h2>
+      <p class="section-lead">Al comprar en Orfeo aceptás las siguientes condiciones.</p>
+
+      <div class="faq-group">
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            Datos personales y privacidad
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="faq-a">Los datos que nos proporcionás (nombre, email, dirección) se usan únicamente para procesar y entregar tu pedido. No compartimos tu información con terceros ni la usamos para publicidad sin tu consentimiento.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            Pagos y seguridad
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="faq-a">Los pagos se coordinan directamente entre Orfeo y el comprador, por transferencia bancaria o efectivo según se acuerde. Orfeo no guarda datos de tarjetas ni información bancaria.</div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            Precios y disponibilidad
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="faq-a">Los precios están expresados en pesos argentinos e incluyen IVA. Orfeo se reserva el derecho de modificar precios sin previo aviso. La disponibilidad de stock puede variar.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTACTO -->
+    <div class="faq-section" id="sec-contacto">
+      <h2 class="section-title">Contacto</h2>
+      <p class="section-lead">¿Tenés una duda que no está acá? Escribinos.</p>
+
+      <div class="about-grid" style="max-width:480px;">
+        <div class="about-cell">
+          <p class="about-cell-label">Email</p>
+          <p style="font-size:14px;font-weight:300;">somosorfeo@gmail.com</p>
+        </div>
+        <div class="about-cell">
+          <p class="about-cell-label">Instagram</p>
+          <p style="font-size:14px;font-weight:300;">@somosorfeo</p>
+        </div>
+        <div class="about-cell">
+          <p class="about-cell-label">Horario</p>
+          <p style="font-size:14px;font-weight:300;">Lun – Vie, 10–18 hs</p>
+        </div>
+        <div class="about-cell">
+          <p class="about-cell-label">Ubicación</p>
+          <p style="font-size:14px;font-weight:300;">Buenos Aires, AR</p>
+        </div>
+      </div>
+
+      <div class="faq-group" style="margin-top:32px;">
+        <div class="faq-item">
+          <button class="faq-q" onclick="toggleFaq(this)">
+            ¿En cuánto tiempo responden?
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="faq-a">Respondemos todos los mensajes en menos de 24 horas hábiles. Para consultas urgentes, Instagram suele ser el canal más rápido.</div>
+        </div>
+      </div>
+
+      <div style="margin-top:32px;">
+        <a href="index.html#contact" style="display:inline-flex;align-items:center;gap:10px;padding:12px 24px;border:.5px solid rgba(13,13,13,.2);border-radius:999px;font-size:11px;font-weight:400;letter-spacing:.1em;text-transform:uppercase;color:var(--dark);text-decoration:none;transition:all .2s;">
+          Ir al formulario de contacto →
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-index">
+    <div>
+      <p class="footer-col-title">Shop</p>
+      <div class="footer-col-links">
+        <a href="shop.html" class="footer-col-link">Todo</a>
+        <a href="shop.html?filter=sweater" class="footer-col-link">Sweaters</a>
+        <a href="shop.html?filter=accesorio" class="footer-col-link">Accesorios</a>
+      </div>
+    </div>
+    <div>
+      <p class="footer-col-title">Info</p>
+      <div class="footer-col-links">
+        <a href="faq.html#about" class="footer-col-link">Sobre Orfeo</a>
+        <a href="faq.html#envios" class="footer-col-link">Envíos</a>
+        <a href="faq.html#cambios" class="footer-col-link">Cambios y devoluciones</a>
+        <a href="faq.html#terminos" class="footer-col-link">Términos</a>
+      </div>
+    </div>
+    <div>
+      <p class="footer-col-title">Socials</p>
+      <div class="footer-col-links">
+        <a href="#" class="footer-col-link">Instagram</a>
+        <a href="#" class="footer-col-link">TikTok</a>
+        <a href="#" class="footer-col-link">Pinterest</a>
+      </div>
+    </div>
+    <div>
+      <p class="footer-col-title">Contacto</p>
+      <div class="footer-col-links">
+        <a href="index.html#contact" class="footer-col-link">Formulario</a>
+        <a href="mailto:somosorfeo@gmail.com" class="footer-col-link">somosorfeo@gmail.com</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span class="footer-copy">© 2026 Orfeo. Todos los derechos reservados.</span>
+    <span class="footer-logo">Orfeo®</span>
+  </div>
+</footer>
+
+<script>
+function getCart(){try{return JSON.parse(localStorage.getItem('orfeo_cart')||'[]');}catch{return[];}}
+function updateCartNav(){const t=getCart().reduce((s,i)=>s+i.qty,0);const el=document.getElementById('nav-cart');if(el)el.textContent='Carrito: '+t;}
+updateCartNav();
+
+const sections={about:'sec-about',envios:'sec-envios',cambios:'sec-cambios',terminos:'sec-terminos',contacto:'sec-contacto'};
+
+function showSection(id){
+  document.querySelectorAll('.faq-section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.faq-nav-item').forEach(b=>b.classList.remove('active'));
+  const sec=document.getElementById('sec-'+id);
+  if(sec)sec.classList.add('active');
+  event.currentTarget.classList.add('active');
+  window.scrollTo({top:document.querySelector('.faq-layout').offsetTop-60,behavior:'smooth'});
+}
+
+function toggleFaq(btn){
+  const answer=btn.nextElementSibling;
+  const isOpen=answer.classList.contains('open');
+  // cerrar todos
+  document.querySelectorAll('.faq-q').forEach(b=>b.classList.remove('open'));
+  document.querySelectorAll('.faq-a').forEach(a=>a.classList.remove('open'));
+  if(!isOpen){btn.classList.add('open');answer.classList.add('open');}
+}
+
+// hash routing
+const hash=window.location.hash.replace('#','');
+if(hash&&sections[hash]){
+  const btn=document.querySelector(`.faq-nav-item[onclick*="${hash}"]`);
+  if(btn){btn.click();}
+}
+</script>
+</body>
+</html>

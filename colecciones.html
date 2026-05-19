@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tandas</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f0ede6;--dark:#0d0d0d;--white:#ffffff;
+  --border:rgba(13,13,13,0.09);--panel:#e8e5de;--muted:rgba(13,13,13,0.38);
+  --nav-h:52px;--font:'DM Sans',sans-serif;
+}
+html,body{min-height:100%;background:var(--bg);color:var(--dark);font-family:var(--font);overflow-x:hidden;}
+
+/* ── NAV ── */
+nav{position:sticky;top:0;z-index:100;height:var(--nav-h);display:flex;align-items:center;justify-content:space-between;padding:0 36px;background:var(--bg);border-bottom:.5px solid var(--border);}
+.nav-left{display:flex;align-items:center;gap:20px;}
+.nav-logo{font-size:13px;font-weight:500;letter-spacing:.06em;color:var(--dark);text-decoration:none;}
+.nav-link{font-size:11px;font-weight:400;letter-spacing:.08em;text-transform:uppercase;color:var(--dark);text-decoration:none;opacity:.45;transition:opacity .2s;}
+.nav-link:hover,.nav-link.active{opacity:1;}
+.nav-cart{font-size:11px;font-weight:400;letter-spacing:.06em;color:var(--dark);text-decoration:none;opacity:.7;}
+
+/* ── HERO ── */
+.page-hero{padding:72px 36px 48px;border-bottom:.5px solid var(--border);display:flex;align-items:flex-end;justify-content:space-between;}
+.page-hero-left h1{font-size:clamp(36px,5vw,56px);font-weight:300;letter-spacing:-.03em;line-height:1;}
+.page-hero-left p{font-size:14px;font-weight:300;color:var(--muted);margin-top:10px;}
+.page-hero-right{font-size:11px;font-weight:300;color:var(--muted);letter-spacing:.06em;text-align:right;}
+
+/* ── COLECCIÓN HERO CAROUSEL ── */
+.col-hero{position:relative;height:90vh;overflow:hidden;background:var(--dark);}
+.col-slide{position:absolute;inset:0;opacity:0;transition:opacity .6s ease;}
+.col-slide.on{opacity:1;}
+.col-slide img,.col-slide video{width:100%;height:100%;object-fit:cover;display:block;}
+.col-slide-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(13,13,13,.6) 0%,transparent 50%);}
+.col-slide-info{position:absolute;bottom:48px;left:48px;right:48px;z-index:2;display:flex;align-items:flex-end;justify-content:space-between;}
+.col-slide-label{font-size:10px;font-weight:400;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:8px;}
+.col-slide-name{font-size:clamp(28px,4vw,48px);font-weight:300;letter-spacing:-.02em;color:var(--white);line-height:1.1;}
+.col-slide-desc{font-size:13px;font-weight:300;color:rgba(255,255,255,.6);margin-top:8px;max-width:320px;line-height:1.6;}
+.col-slide-cta{display:inline-flex;align-items:center;gap:8px;margin-top:20px;padding:12px 24px;border:.5px solid rgba(255,255,255,.35);border-radius:999px;font-size:11px;font-weight:400;letter-spacing:.1em;text-transform:uppercase;color:var(--white);text-decoration:none;transition:all .2s;}
+.col-slide-cta:hover{background:rgba(255,255,255,.1);}
+
+/* dots + flechas */
+.col-hero-nav{display:flex;flex-direction:column;align-items:flex-end;gap:16px;}
+.col-dots{display:flex;flex-direction:column;gap:6px;}
+.col-dot{width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.25);cursor:pointer;transition:all .2s;}
+.col-dot.on{background:var(--white);height:16px;border-radius:2px;}
+.col-arrows{display:flex;gap:8px;}
+.col-arr{width:36px;height:36px;border-radius:50%;border:.5px solid rgba(255,255,255,.25);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;color:var(--white);}
+.col-arr:hover{background:rgba(255,255,255,.1);}
+
+/* progress bar */
+.col-progress{position:absolute;bottom:0;left:0;height:2px;background:rgba(255,255,255,.15);}
+.col-progress-bar{height:100%;background:var(--white);width:0%;transition:width .1s linear;}
+
+/* ── LISTA DE COLECCIONES ── */
+.cols-list{padding:0;}
+.col-item{display:grid;grid-template-columns:1fr 1fr;border-bottom:.5px solid var(--border);}
+.col-item:nth-child(even){direction:rtl;}
+.col-item>*{direction:ltr;}
+.col-item-img{aspect-ratio:4/3;overflow:hidden;background:var(--panel);}
+.col-item-img img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s ease;}
+.col-item:hover .col-item-img img{transform:scale(1.03);}
+.col-item-info{padding:52px 48px;display:flex;flex-direction:column;justify-content:center;}
+.col-item-season{font-size:10px;font-weight:400;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
+.col-item-name{font-size:clamp(28px,3.5vw,44px);font-weight:300;letter-spacing:-.02em;line-height:1.1;margin-bottom:16px;}
+.col-item-desc{font-size:13px;font-weight:300;color:var(--muted);line-height:1.75;max-width:360px;margin-bottom:28px;}
+.col-item-count{font-size:11px;font-weight:300;color:var(--muted);letter-spacing:.06em;margin-bottom:20px;}
+.col-item-link{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:400;letter-spacing:.1em;text-transform:uppercase;color:var(--dark);text-decoration:none;padding-bottom:2px;border-bottom:.5px solid var(--dark);transition:opacity .2s;}
+.col-item-link:hover{opacity:.55;}
+
+/* ── MOODBOARD STRIP ── */
+.moodboard{overflow:hidden;border-top:.5px solid var(--border);border-bottom:.5px solid var(--border);}
+.moodboard-track{display:flex;gap:0;width:max-content;animation:scroll-left 30s linear infinite;}
+.moodboard:hover .moodboard-track{animation-play-state:paused;}
+.moodboard-img{width:280px;height:180px;background:var(--panel);overflow:hidden;flex-shrink:0;}
+.moodboard-img img{width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(.3);}
+@keyframes scroll-left{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ── STATS ── */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:.5px solid var(--border);}
+.stat{padding:36px;border-right:.5px solid var(--border);}
+.stat:last-child{border-right:none;}
+.stat-num{font-size:36px;font-weight:200;letter-spacing:-.04em;margin-bottom:6px;}
+.stat-label{font-size:11px;font-weight:300;color:var(--muted);letter-spacing:.06em;}
+
+/* ── FOOTER ── */
+footer{background:var(--dark);padding:52px 36px 32px;}
+.footer-index{display:grid;grid-template-columns:repeat(4,1fr);gap:36px;}
+.footer-col-title{font-size:10px;font-weight:400;letter-spacing:.1em;text-transform:uppercase;color:rgba(240,237,230,.3);margin-bottom:12px;}
+.footer-col-links{display:flex;flex-direction:column;gap:8px;}
+.footer-col-link{font-size:12px;font-weight:300;color:rgba(240,237,230,.55);text-decoration:none;transition:color .15s;}
+.footer-col-link:hover{color:#fff;}
+.footer-bottom{display:flex;justify-content:space-between;align-items:center;border-top:.5px solid rgba(255,255,255,.07);padding-top:20px;margin-top:48px;}
+.footer-copy{font-size:11px;font-weight:300;color:rgba(240,237,230,.2);}
+.footer-logo{font-size:12px;font-weight:400;letter-spacing:.08em;color:rgba(240,237,230,.2);}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  nav{padding:0 20px;}
+  .page-hero{padding:48px 20px 32px;flex-direction:column;gap:12px;}
+  .page-hero-right{text-align:left;}
+  .col-hero{height:70vh;}
+  .col-slide-info{bottom:28px;left:24px;right:24px;flex-direction:column;gap:0;}
+  .col-hero-nav{flex-direction:row;position:absolute;bottom:24px;right:24px;}
+  .col-dots{flex-direction:row;}
+  .col-dot.on{height:4px;width:16px;border-radius:2px;}
+  .col-item{grid-template-columns:1fr;}
+  .col-item:nth-child(even){direction:ltr;}
+  .col-item-img{aspect-ratio:3/2;}
+  .col-item-info{padding:28px 20px;}
+  .stats-row{grid-template-columns:repeat(2,1fr);}
+  .stat{border-right:none;border-bottom:.5px solid var(--border);}
+  .footer-index{grid-template-columns:repeat(2,1fr);}
+  footer{padding:40px 20px 24px;}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-left">
+    <a href="index.html" class="nav-logo">Orfeo</a>
+    <a href="index.html" class="nav-link">Inicio</a>
+    <a href="shop.html" class="nav-link">Shop</a>
+  </div>
+  <div class="nav-right">
+    <a href="cart.html" class="nav-cart" id="nav-cart">Carrito: 0</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="page-hero">
+  <div class="page-hero-left">
+    <h1>Colecciones</h1>
+    <p>Cada temporada, una idea. Prendas con intención.</p>
+  </div>
+  <div class="page-hero-right">
+    <span id="col-count">Cargando…</span>
+  </div>
+</div>
+
+<!-- CAROUSEL HERO -->
+<div class="col-hero" id="col-hero">
+  <div id="col-slides"></div>
+  <div class="col-progress"><div class="col-progress-bar" id="progress-bar"></div></div>
+</div>
+
+<!-- MOODBOARD STRIP -->
+<div class="moodboard" id="moodboard" style="display:none">
+  <div class="moodboard-track" id="moodboard-track"></div>
+</div>
+
+<!-- STATS -->
+<div class="stats-row">
+  <div class="stat">
+    <p class="stat-num" id="stat-productos">—</p>
+    <p class="stat-label">Productos</p>
+  </div>
+  <div class="stat">
+    <p class="stat-num">1</p>
+    <p class="stat-label">Colecciones activas</p>
+  </div>
+  <div class="stat">
+    <p class="stat-num">2026</p>
+    <p class="stat-label">Año de fundación</p>
+  </div>
+  <div class="stat">
+    <p class="stat-num">ARG</p>
+    <p class="stat-label">Producción local</p>
+  </div>
+</div>
+
+<!-- LISTA DE COLECCIONES -->
+<div class="cols-list" id="cols-list">
+  <!-- colección SS2026 hardcoded + dinámico -->
+  <div class="col-item">
+    <div class="col-item-img">
+      <img src="img/background.png" alt="SS2026" onerror="this.style.background='#e8e5de'">
+    </div>
+    <div class="col-item-info">
+      <span class="col-item-season">SS2026</span>
+      <h2 class="col-item-name">Back to Basics</h2>
+      <p class="col-item-desc">La primera colección de Orfeo. Prendas esenciales, materiales de calidad, identidad clara. Un punto de partida para construir un guardarropa con sentido.</p>
+      <p class="col-item-count" id="col-ss26-count">— productos</p>
+      <a href="shop.html" class="col-item-link">
+        Ver colección
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-index">
+    <div>
+      <p class="footer-col-title">Shop</p>
+      <div class="footer-col-links">
+        <a href="shop.html" class="footer-col-link">Todo</a>
+        <a href="shop.html?filter=sweater" class="footer-col-link">Sweaters</a>
+        <a href="shop.html?filter=accesorio" class="footer-col-link">Accesorios</a>
+      </div>
+    </div>
+    <div>
+      <p class="footer-col-title">Info</p>
+      <div class="footer-col-links">
+        <a href="faq.html" class="footer-col-link">Sobre Orfeo</a>
+        <a href="faq.html#envios" class="footer-col-link">Envíos</a>
+        <a href="faq.html#cambios" class="footer-col-link">Cambios y devoluciones</a>
+      </div>
+    </div>
+    <div>
+      <p class="footer-col-title">Socials</p>
+      <div class="footer-col-links">
+        <a href="#" id="lnk-ig" class="footer-col-link">Instagram</a>
+        <a href="#" id="lnk-tk" class="footer-col-link">TikTok</a>
+      </div>
+    </div>
+    <div>
+      <p class="footer-col-title">Contacto</p>
+      <div class="footer-col-links">
+        <a href="index.html#contact" class="footer-col-link">Formulario</a>
+        <a href="mailto:somosorfeo@gmail.com" class="footer-col-link">somosorfeo@gmail.com</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span class="footer-copy">© 2026 Orfeo. Todos los derechos reservados.</span>
+    <span class="footer-logo">Orfeo®</span>
+  </div>
+</footer>
+
+<script>
+function getCart(){try{return JSON.parse(localStorage.getItem('orfeo_cart')||'[]');}catch{return[];}}
+function updateCartNav(){const t=getCart().reduce((s,i)=>s+i.qty,0);document.getElementById('nav-cart').textContent='Carrito: '+t;}
+updateCartNav();
+
+/* ── CAROUSEL ── */
+let _ci=0,_slides=[],_timer=null,_prog=0,_progTimer=null;
+const DURATION=5000;
+
+function buildCarousel(products){
+  const featured=products.filter(p=>p.img&&p.img.startsWith('http')||p.imgs&&p.imgs.length);
+  const items=featured.length>0?featured:products;
+  _slides=items.slice(0,6);
+
+  const container=document.getElementById('col-slides');
+  container.innerHTML=_slides.map((p,i)=>{
+    const img=(p.imgs&&p.imgs[0])||p.img||'';
+    return `
+    <div class="col-slide ${i===0?'on':''}" id="csl-${i}">
+      <img src="${esc(img)}" alt="${esc(p.nombre)}" onerror="this.parentElement.style.background='#1a1a17'">
+      <div class="col-slide-overlay"></div>
+      <div class="col-slide-info">
+        <div>
+          <p class="col-slide-label">SS2026 — ${esc(p.categoria||'')}</p>
+          <h2 class="col-slide-name">${esc(p.nombre)}</h2>
+          ${p.descripcion?`<p class="col-slide-desc">${esc(p.descripcion)}</p>`:''}
+          <a href="product.html?id=${p.id}" class="col-slide-cta">
+            Ver producto
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+        </div>
+        <div class="col-hero-nav">
+          <div class="col-dots">
+            ${_slides.map((_,j)=>`<div class="col-dot ${j===0?'on':''}" onclick="cGo(${j})"></div>`).join('')}
+          </div>
+          <div class="col-arrows">
+            <button class="col-arr" onclick="cMove(-1)">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <button class="col-arr" onclick="cMove(1)">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  startAutoplay();
+}
+
+function cGo(idx){
+  document.querySelectorAll('.col-slide').forEach((s,i)=>s.classList.toggle('on',i===idx));
+  document.querySelectorAll('.col-dot').forEach((d,i)=>d.classList.toggle('on',i===idx));
+  _ci=idx;
+  resetProgress();
+}
+function cMove(dir){cGo((_ci+dir+_slides.length)%_slides.length);}
+
+function resetProgress(){
+  clearInterval(_progTimer);_prog=0;
+  const bar=document.getElementById('progress-bar');
+  if(bar)bar.style.width='0%';
+  _progTimer=setInterval(()=>{
+    _prog+=100/DURATION*100;
+    if(bar)bar.style.width=Math.min(_prog,100)+'%';
+    if(_prog>=100){clearInterval(_progTimer);}
+  },100);
+}
+
+function startAutoplay(){
+  clearInterval(_timer);
+  resetProgress();
+  _timer=setInterval(()=>cMove(1),DURATION);
+}
+
+// Pausar autoplay en hover
+document.getElementById('col-hero').addEventListener('mouseenter',()=>{clearInterval(_timer);clearInterval(_progTimer);});
+document.getElementById('col-hero').addEventListener('mouseleave',()=>startAutoplay());
+
+/* ── MOODBOARD ── */
+function buildMoodboard(products){
+  const imgs=products.filter(p=>p.img).map(p=>p.img);
+  if(imgs.length<3)return;
+  const doubled=[...imgs,...imgs]; // loop infinito
+  const track=document.getElementById('moodboard-track');
+  track.innerHTML=doubled.map(src=>`
+    <div class="moodboard-img">
+      <img src="${esc(src)}" alt="" onerror="this.parentElement.style.display='none'" loading="lazy">
+    </div>`).join('');
+  document.getElementById('moodboard').style.display='block';
+}
+
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+/* ── BOOT ── */
+(async()=>{
+  let db=null;
+  try{const r=await fetch('/api/entries');if(r.ok)db=await r.json();}catch{}
+  if(!db){try{db=JSON.parse(localStorage.getItem('orfeo_db')||'null');}catch{}}
+
+  if(db?.settings){
+    const s=db.settings;
+    if(s.instagram&&s.instagram!=='#')document.getElementById('lnk-ig').href=s.instagram;
+    if(s.tiktok&&s.tiktok!=='#')document.getElementById('lnk-tk').href=s.tiktok;
+  }
+
+  const products=db?.products||[];
+  const count=products.length;
+
+  document.getElementById('col-count').textContent=count+' producto'+(count!==1?'s':'');
+  document.getElementById('stat-productos').textContent=count||'—';
+  document.getElementById('col-ss26-count').textContent=count+' producto'+(count!==1?'s':'');
+
+  if(count>0){
+    buildCarousel(products);
+    buildMoodboard(products);
+  } else {
+    // fallback carousel con imagen del hero
+    document.getElementById('col-slides').innerHTML=`
+      <div class="col-slide on">
+        <img src="img/background.png" alt="SS2026" onerror="this.parentElement.style.background='#1a1a17'">
+        <div class="col-slide-overlay"></div>
+        <div class="col-slide-info">
+          <div>
+            <p class="col-slide-label">SS2026</p>
+            <h2 class="col-slide-name">Back to Basics</h2>
+            <a href="shop.html" class="col-slide-cta">Ver shop →</a>
+          </div>
+        </div>
+      </div>`;
+  }
+})();
+</script>
+</body>
+</html>
