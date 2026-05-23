@@ -120,14 +120,44 @@
     background: #1a1a17;
   }
 
-  .hero-bg {
+  /* ── HERO CAROUSEL ── */
+  .hero-slide {
     position: absolute;
     inset: 0;
-    width: 100%;
-    height: 100%;
+    opacity: 0;
+    transition: opacity 1s ease;
+    will-change: opacity;
+  }
+  .hero-slide.on { opacity: 1; }
+  .hero-slide img, .hero-slide video {
+    width: 100%; height: 100%;
     object-fit: cover;
     object-position: center 25%;
     filter: saturate(0.75) brightness(0.9);
+    display: block;
+  }
+
+  /* dots */
+  .hero-dots {
+    position: absolute;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .hero-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+    border: none; padding: 0; cursor: pointer;
+    transition: background 0.3s, transform 0.3s;
+  }
+  .hero-dot.on {
+    background: var(--white);
+    transform: scale(1.35);
   }
 
   .hero-overlay {
@@ -519,7 +549,6 @@
 
     /* navbar */
     nav { padding: 0 20px; }
-    .nav-search { display: none; }
 
     /* hero */
     .hero-group {
@@ -599,12 +628,6 @@
   </div>
   <div class="nav-right">
     <a href="shop.html" class="nav-link">Shop</a>
-    <div class="nav-search">
-      <svg class="search-icon" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-      </svg>
-      <input type="text" placeholder="Buscar">
-    </div>
     <a href="cart.html" class="nav-cart" id="nav-cart">Carrito: 0</a>
   </div>
 </nav>
@@ -613,26 +636,21 @@
 <div class="scroll-stack">
 
 <!-- ── HERO ── -->
-<section class="hero">
-  <img class="hero-bg" src="img/background.png" draggable="false">
+<section class="hero" id="hero-section">
+  <!-- slides inyectados por JS desde admin -->
+  <div id="hero-slides"></div>
+
   <div class="hero-overlay"></div>
+  <div class="hero-dots" id="hero-dots"></div>
 
   <div class="hero-center">
     <div class="hero-group">
-
-      <img
-        class="hero-logo"
-        src="img/logo.png"
-        alt="Orfeo"
-        onerror="this.style.display='none'"
-      >
-
+      <img class="hero-logo" src="img/logo.png" alt="Orfeo" onerror="this.style.display='none'">
       <div class="hero-meta">
         <span class="hero-tagline">B2B.</span>
         <span class="hero-meta-item">Buenos Aires, Argentina</span>
         <span class="hero-meta-item">Est. 2026</span>
       </div>
-
     </div>
   </div>
 </section>
@@ -740,24 +758,63 @@ const CART_KEY='orfeo_cart';
 function getCart(){try{return JSON.parse(localStorage.getItem(CART_KEY)||'[]');}catch{return[];}}
 function saveCart(c){localStorage.setItem(CART_KEY,JSON.stringify(c));updateCartNav();}
 function updateCartNav(){const t=getCart().reduce((s,i)=>s+i.qty,0);const el=document.getElementById('nav-cart');if(el)el.textContent='Carrito: '+t;}
-function homeAdd(btn,id){
-  const cart=getCart();
-  const ex=cart.find(x=>x.id===id);
-  if(ex)ex.qty+=1;
-  else{
-    // buscar en allProducts si existe
-    const p=window._allProducts&&window._allProducts.find(x=>x.id===id);
-    if(p)cart.push({...p,qty:1,selectedTalle:null,selectedColor:null});
-  }
-  saveCart(cart);
-  btn.textContent='✓';
-  setTimeout(()=>{btn.textContent='+ Agregar';},1600);
-}
 updateCartNav();
-  const nav = document.getElementById('navbar');
-  window.addEventListener('scroll', () => {
-    nav.classList.toggle('scrolled', window.scrollY >= window.innerHeight);
-  }, { passive: true });
+
+/* ── NAV SCROLL ── */
+const nav = document.getElementById('navbar');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', window.scrollY >= window.innerHeight);
+}, { passive: true });
+
+/* ── HERO CAROUSEL ── */
+let _hi = 0, _hSlides = [], _hTimer = null;
+
+function buildHeroCarousel(slides) {
+  const container = document.getElementById('hero-slides');
+  const dotsEl    = document.getElementById('hero-dots');
+  if (!slides || slides.length === 0) {
+    // sin slides del admin: fondo oscuro limpio
+    container.innerHTML = '';
+    dotsEl.innerHTML = '';
+    return;
+  }
+  _hSlides = slides;
+
+  container.innerHTML = slides.map((url, i) => {
+    const isVideo = /\.(mp4|webm|mov)$/i.test(url);
+    return `<div class="hero-slide ${i === 0 ? 'on' : ''}" id="hs-${i}">
+      ${isVideo
+        ? `<video src="${url}" autoplay muted loop playsinline></video>`
+        : `<img src="${url}" alt="" draggable="false">`}
+    </div>`;
+  }).join('');
+
+  if (slides.length > 1) {
+    dotsEl.innerHTML = slides.map((_, i) =>
+      `<button class="hero-dot ${i === 0 ? 'on' : ''}" onclick="hGo(${i})"></button>`
+    ).join('');
+    startHeroAuto();
+  }
+}
+
+function hGo(idx) {
+  if (idx === _hi || !_hSlides.length) return;
+  document.querySelectorAll('.hero-slide').forEach((s, i) => s.classList.toggle('on', i === idx));
+  document.querySelectorAll('.hero-dot').forEach((d, i) => d.classList.toggle('on', i === idx));
+  _hi = idx;
+}
+
+function startHeroAuto() {
+  clearInterval(_hTimer);
+  _hTimer = setInterval(() => hGo((_hi + 1) % _hSlides.length), 4500);
+}
+
+// Pausar en hover, reanudar al salir — sin recoil
+const heroSection = document.getElementById('hero-section');
+if (heroSection) {
+  heroSection.addEventListener('mouseenter', () => clearInterval(_hTimer));
+  heroSection.addEventListener('mouseleave', () => { if (_hSlides.length > 1) startHeroAuto(); });
+}
 
   /* ── SYNC DESDE ADMIN (/api/entries + localStorage + hardcoded fallback) ── */
   (async function() {
@@ -776,24 +833,20 @@ updateCartNav();
       const res = await fetch('/api/entries');
       if (res.ok) {
         const parsed = await res.json();
-        // Guardar en localStorage solo si es un objeto válido
         if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
           db = parsed;
           try { localStorage.setItem('orfeo_db', JSON.stringify(db)); } catch(e) {}
-        } else {
-          console.warn('[orfeo] /api/entries devolvió formato inesperado:', typeof parsed);
         }
-      } else {
-        console.warn('[orfeo] /api/entries status:', res.status);
       }
-    } catch(e) {
-      console.error('[orfeo] fetch /api/entries falló:', e.message);
-    }
+    } catch(e) {}
 
     // 2. Fallback: localStorage
     if (!db) {
       try { db = JSON.parse(localStorage.getItem('orfeo_db') || 'null'); } catch(e) {}
     }
+
+    // Hero carousel — siempre llamar aunque no haya slides
+    buildHeroCarousel(db?.heroSlides || []);
 
     // Productos destacados en el grid del inicio
     const grid = document.getElementById('shop-grid');
