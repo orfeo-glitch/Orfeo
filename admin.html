@@ -629,10 +629,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14
           <button class="btn btn-primary btn-sm" onclick="saveCarousel()">Guardar cambios</button>
         </div>
       </div>
-      <div class="section-content" style="padding:32px 36px;max-width:600px;">
-        <p style="font-size:13px;font-weight:300;color:var(--muted-d);margin-bottom:28px;line-height:1.6;">Agregá hasta 5 URLs de imágenes o GIFs que van a rotar como carousel en la pantalla principal. Se muestran en orden.</p>
-        <div id="carousel-slots" style="display:flex;flex-direction:column;gap:12px;"></div>
-        <p style="font-size:11px;color:var(--muted-d);margin-top:20px;letter-spacing:.04em;">Formatos: JPG, PNG, GIF, WEBP. También podés pegar links de Imgur, Giphy, etc.</p>
+      <div class="section-content" style="padding:32px 36px;max-width:640px;">
+        <p style="font-size:13px;font-weight:300;color:var(--muted-d);margin-bottom:28px;line-height:1.6;">Hasta 5 imágenes o GIFs que rotan en el hero del home. Subí desde tu computadora o pegá una URL.</p>
+        <div id="carousel-slots" style="display:flex;flex-direction:column;gap:20px;"></div>
       </div>
     </section>
 
@@ -1111,44 +1110,88 @@ function renderCarouselSlots(){
   const slots=document.getElementById('carousel-slots');
   if(!slots)return;
   const urls=db.heroSlides||[];
-  const rows=[];
+  let html='';
   for(let i=0;i<5;i++){
     const val=urls[i]||'';
-    rows.push(`
-      <div style="display:flex;flex-direction:column;gap:6px;">
-        <label style="font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--muted-d);">Foto ${i+1}${i===0?' (principal)':''}</label>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <input id="cs-${i}" type="text" class="form-input" value="${val.replace(/"/g,'&quot;')}" placeholder="https://..." oninput="previewCarouselSlot(${i})">
-          ${val?`<button onclick="clearCarouselSlot(${i})" style="background:none;border:none;color:var(--muted-d);cursor:pointer;font-size:18px;padding:0 4px;" title="Quitar">×</button>`:''}
-        </div>
-        <div id="cs-prev-${i}" style="width:100%;height:${val?'120':'0'}px;overflow:hidden;transition:height .2s;background:var(--panel) center/cover no-repeat;${val?`background-image:url('${val.replace(/'/g,"\\'")}')`:''};"></div>
-      </div>`);
+    html+=`
+    <div style="background:var(--white);border:.5px solid var(--border);padding:16px;" id="cs-wrap-${i}">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <span style="font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--muted-d);">Foto ${i+1}${i===0?' — principal':''}</span>
+        ${val?`<button onclick="clearCarouselSlot(${i})" style="background:none;border:none;color:var(--muted-d);cursor:pointer;font-size:12px;letter-spacing:.06em;text-transform:uppercase;">Quitar</button>`:''}
+      </div>
+      ${val
+        ? `<div style="width:100%;height:160px;background:center/cover no-repeat var(--panel);background-image:url('${val.replace(/'/g,"\\'")}');margin-bottom:10px;"></div>`
+        : `<div style="width:100%;height:100px;background:var(--panel);display:flex;align-items:center;justify-content:center;margin-bottom:10px;cursor:pointer;" onclick="document.getElementById('cs-file-${i}').click()">
+            <span style="font-size:12px;color:var(--muted-d);">+ Subir imagen</span>
+           </div>`
+      }
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-sm" onclick="document.getElementById('cs-file-${i}').click()" style="flex-shrink:0;">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          ${val?'Cambiar':'Subir'}
+        </button>
+        <input id="cs-url-${i}" type="text" class="form-input" value="${val.replace(/"/g,'&quot;')}" placeholder="o pegá una URL..." oninput="setCarouselUrl(${i},this.value)" style="flex:1;">
+      </div>
+      <input type="file" id="cs-file-${i}" accept="image/*,image/gif" style="display:none" onchange="uploadCarouselSlot(${i},this)">
+      <div id="cs-progress-${i}" style="display:none;margin-top:8px;font-size:11px;color:var(--muted-d);letter-spacing:.04em;">Subiendo...</div>
+    </div>`;
   }
-  slots.innerHTML=rows.join('');
+  slots.innerHTML=html;
 }
 
-function previewCarouselSlot(i){
-  const url=document.getElementById('cs-'+i)?.value.trim();
-  const prev=document.getElementById('cs-prev-'+i);
-  if(!prev)return;
-  if(url){prev.style.height='120px';prev.style.backgroundImage=`url('${url.replace(/'/g,"\\'")}')`;prev.style.backgroundSize='cover';prev.style.backgroundPosition='center';}
-  else{prev.style.height='0';prev.style.backgroundImage='';}
+async function uploadCarouselSlot(i, input){
+  const file=input.files[0];
+  if(!file)return;
+  const prog=document.getElementById('cs-progress-'+i);
+  if(prog){prog.style.display='block';prog.textContent='Subiendo...';}
+  try{
+    const res=await fetch('/api/upload',{
+      method:'POST',
+      headers:{
+        'Authorization':'Bearer '+(window._adminSecret||'orfeo2026'),
+        'x-filename': Date.now()+'-'+file.name.replace(/[^a-z0-9.]/gi,'-'),
+        'x-content-type': file.type,
+      },
+      body: file,
+    });
+    if(!res.ok)throw new Error('Error '+res.status);
+    const {url}=await res.json();
+    if(!db.heroSlides)db.heroSlides=[];
+    db.heroSlides[i]=url;
+    // rellenar huecos con ''
+    for(let j=0;j<5;j++){if(db.heroSlides[j]===undefined)db.heroSlides[j]='';}
+    db.heroSlides=db.heroSlides.map(s=>s||'').slice(0,5);
+    renderCarouselSlots();
+    if(prog){prog.style.display='none';}
+  }catch(e){
+    if(prog){prog.textContent='Error al subir: '+e.message;}
+    console.error(e);
+  }
+}
+
+function setCarouselUrl(i,url){
+  if(!db.heroSlides)db.heroSlides=Array(5).fill('');
+  while(db.heroSlides.length<5)db.heroSlides.push('');
+  db.heroSlides[i]=url.trim();
 }
 
 function clearCarouselSlot(i){
-  const inp=document.getElementById('cs-'+i);
-  if(inp)inp.value='';
-  previewCarouselSlot(i);
+  if(db.heroSlides)db.heroSlides[i]='';
   renderCarouselSlots();
 }
 
 function saveCarousel(){
-  const slides=[];
+  const slides=(db.heroSlides||[]).filter(s=>s&&s.trim());
+  // también leer URLs escritas a mano
   for(let i=0;i<5;i++){
-    const v=document.getElementById('cs-'+i)?.value.trim();
-    if(v)slides.push(v);
+    const urlInput=document.getElementById('cs-url-'+i);
+    if(urlInput&&urlInput.value.trim()){
+      if(!db.heroSlides)db.heroSlides=[];
+      while(db.heroSlides.length<=i)db.heroSlides.push('');
+      db.heroSlides[i]=urlInput.value.trim();
+    }
   }
-  db.heroSlides=slides;
+  db.heroSlides=(db.heroSlides||[]).filter(s=>s&&s.trim());
   saveDb();
   showToast('Carousel guardado','success');
 }
