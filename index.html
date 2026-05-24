@@ -845,8 +845,16 @@ if (heroSection) {
       try { db = JSON.parse(localStorage.getItem('orfeo_db') || 'null'); } catch(e) {}
     }
 
-    // Hero carousel — siempre llamar aunque no haya slides
-    buildHeroCarousel(db?.heroSlides || []);
+    // Hero carousel — fotos hardcodeadas desde img/
+    // Agregá o quitá fotos acá y hacé redeploy
+    const heroSlides = [
+      'img/hero1.png',
+      'img/hero2.png',
+      'img/hero3.png',
+      'img/hero4.png',
+      'img/hero5.png',
+    ].filter(s => s); // quitá las que no uses
+    buildHeroCarousel(heroSlides);
 
     // Productos destacados en el grid del inicio
     const grid = document.getElementById('shop-grid');
