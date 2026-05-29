@@ -194,7 +194,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:14
 .img-upload-area{border:2px dashed var(--border);border-radius:var(--radius);padding:32px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;}
 .img-upload-area:hover{border-color:var(--accent);background:var(--bg);}
 .img-upload-area.has-img{border-style:solid;border-color:var(--border);padding:0;overflow:hidden;position:relative;}
-.img-upload-area.has-img img{width:100%;height:260px;object-fit:cover;display:block;}
+.img-upload-area.has-img img{width:100%;height:320px;object-fit:contain;background:var(--panel);display:block;}
 .img-upload-area .upload-hint{font-size:12px;color:var(--muted);margin-top:8px;}
 .img-upload-area .upload-icon{font-size:28px;opacity:.3;}
 .img-cover-overlay{position:absolute;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;gap:10px;}
@@ -902,7 +902,7 @@ function fillProductForm(p){
   if(p?.img){
     area.classList.add('has-img');
     area.style.backgroundImage='';
-    area.innerHTML=`<img src="${esc(p.img)}" style="width:100%;height:260px;object-fit:cover;display:block;" onerror="this.style.display='none'"><div class="img-cover-overlay" id="img-cover-overlay"><button class="img-cover-btn" onclick="event.stopPropagation();document.getElementById('ed-img-file').click()">Cambiar foto</button><button class="img-cover-btn" onclick="event.stopPropagation();clearMainImg()">Quitar</button></div><input type="hidden" id="ed-img" value="${esc(p.img)}">`;
+    area.innerHTML=`<img src="${esc(p.img)}" style="width:100%;height:320px;object-fit:contain;background:var(--panel);display:block;" onerror="this.style.display='none'"><div class="img-cover-overlay" id="img-cover-overlay"><button class="img-cover-btn" onclick="event.stopPropagation();document.getElementById('ed-img-file').click()">Cambiar foto</button><button class="img-cover-btn" onclick="event.stopPropagation();clearMainImg()">Quitar</button></div><input type="hidden" id="ed-img" value="${esc(p.img)}">`;
   }else{
     area.classList.remove('has-img');
     area.innerHTML=`<div class="upload-icon">⬆</div><div style="font-size:13px;color:var(--muted);margin-top:8px;">Hacé click o arrastrá para subir la foto principal</div><div class="upload-hint">JPG, PNG — se comprime automáticamente</div><div class="img-cover-overlay" id="img-cover-overlay"><button class="img-cover-btn" onclick="event.stopPropagation();document.getElementById('ed-img-file').click()">Cambiar foto</button><button class="img-cover-btn" onclick="event.stopPropagation();clearMainImg()">Quitar</button></div><input type="hidden" id="ed-img" value="">`;
@@ -994,12 +994,12 @@ function compressImg(file,maxPx,quality,cb){
 
 function handleImgUpload(input){
   if(!input.files[0])return;
-  compressImg(input.files[0],1000,0.8,dataUrl=>{
+  compressImg(input.files[0],2400,0.95,dataUrl=>{
     if(edGallery.length===0)edGallery.push(dataUrl);else edGallery[0]=dataUrl;
     /* update area */
     const area=document.getElementById('img-upload-area');
     area.classList.add('has-img');
-    area.innerHTML=`<img src="${dataUrl}" style="width:100%;height:260px;object-fit:cover;display:block;"><div class="img-cover-overlay" id="img-cover-overlay"><button class="img-cover-btn" onclick="event.stopPropagation();document.getElementById('ed-img-file').click()">Cambiar foto</button><button class="img-cover-btn" onclick="event.stopPropagation();clearMainImg()">Quitar</button></div><input type="hidden" id="ed-img" value="">`;
+    area.innerHTML=`<img src="${dataUrl}" style="width:100%;height:320px;object-fit:contain;background:var(--panel);display:block;"><div class="img-cover-overlay" id="img-cover-overlay"><button class="img-cover-btn" onclick="event.stopPropagation();document.getElementById('ed-img-file').click()">Cambiar foto</button><button class="img-cover-btn" onclick="event.stopPropagation();clearMainImg()">Quitar</button></div><input type="hidden" id="ed-img" value="">`;
     /* set hidden value */
     document.querySelector('#img-upload-area input[type=hidden]').value=dataUrl;
     renderGallery();
@@ -1032,13 +1032,13 @@ function renderGallery(){
 function handleGalleryUpload(input){
   const files=Array.from(input.files).slice(0,5-edGallery.length);
   let done=0;
-  files.forEach(f=>{compressImg(f,900,0.78,dataUrl=>{edGallery.push(dataUrl);done++;if(done===files.length){renderGallery();if(edGallery.length>0&&!document.getElementById('img-upload-area').classList.contains('has-img')){handleImgDataUrl(edGallery[0]);}}});});
+  files.forEach(f=>{compressImg(f,2400,0.95,dataUrl=>{edGallery.push(dataUrl);done++;if(done===files.length){renderGallery();if(edGallery.length>0&&!document.getElementById('img-upload-area').classList.contains('has-img')){handleImgDataUrl(edGallery[0]);}}});});
   input.value='';
 }
 function handleImgDataUrl(dataUrl){
   const area=document.getElementById('img-upload-area');
   area.classList.add('has-img');
-  area.innerHTML=`<img src="${dataUrl}" style="width:100%;height:260px;object-fit:cover;display:block;"><div class="img-cover-overlay"><button class="img-cover-btn" onclick="event.stopPropagation();document.getElementById('ed-img-file').click()">Cambiar foto</button><button class="img-cover-btn" onclick="event.stopPropagation();clearMainImg()">Quitar</button></div><input type="hidden" id="ed-img" value="${dataUrl}">`;
+  area.innerHTML=`<img src="${dataUrl}" style="width:100%;height:320px;object-fit:contain;background:var(--panel);display:block;"><div class="img-cover-overlay"><button class="img-cover-btn" onclick="event.stopPropagation();document.getElementById('ed-img-file').click()">Cambiar foto</button><button class="img-cover-btn" onclick="event.stopPropagation();clearMainImg()">Quitar</button></div><input type="hidden" id="ed-img" value="${dataUrl}">`;
 }
 
 /* ════════════════════════════════════════
