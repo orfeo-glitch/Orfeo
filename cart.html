@@ -729,7 +729,25 @@
   }
 
     // ── INIT ──
-  renderCart();
+  (async function(){
+    try {
+      let db = null;
+      try { const r = await fetch('/api/entries'); if(r.ok) db = await r.json(); } catch(e) {}
+      if (!db) try { db = JSON.parse(localStorage.getItem('orfeo_db') || 'null'); } catch(e) {}
+
+      if (db && Array.isArray(db.products)) {
+        const activeIds = new Set(db.products.map(p => p.id));
+        const cart = getCart();
+        const cleaned = cart.filter(item => activeIds.has(item.id));
+        if (cleaned.length !== cart.length) {
+          localStorage.setItem('orfeo_cart', JSON.stringify(cleaned));
+        }
+      }
+    } catch(e) {}
+
+    renderCart();
+    renderSummary();
+  })();
 </script>
 </body>
 </html>
