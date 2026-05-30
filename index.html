@@ -248,12 +248,13 @@
     background: var(--dark);
   }
 
-  .drop-video {
+  .drop-media {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: center;
     opacity: 0.6;
   }
 
@@ -657,7 +658,7 @@
 
 <!-- ── DROP SS2026 ── -->
 <section class="drop">
-  <video class="drop-video" src="img/drop.mp4" autoplay muted loop playsinline></video>
+  <img class="drop-media" src="img/drop.jpg" alt="" draggable="false">
   <div class="drop-overlay"></div>
 
   <div class="drop-content">
@@ -886,11 +887,11 @@ if (heroSection) {
       const season = document.querySelector('.drop-season');
       const title  = document.querySelector('.drop-title');
       const sub    = document.querySelector('.drop-sub');
-      const video  = document.querySelector('.drop-video');
+      const dropMedia = document.querySelector('.drop-media');
       if (season) season.textContent = d.temporada;
       if (title)  title.textContent  = d.titulo;
       if (sub)    sub.textContent    = d.subtitulo;
-      if (video && d.videoUrl) video.src = d.videoUrl;
+      if (dropMedia && d.videoUrl) dropMedia.src = d.videoUrl;
     }
 
     // Footer: redes y contacto
