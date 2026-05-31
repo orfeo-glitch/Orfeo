@@ -23,6 +23,19 @@ nav{position:sticky;top:0;z-index:100;height:var(--nav-h);display:flex;align-ite
 .nav-right{display:flex;align-items:center;gap:20px;}
 .nav-cart{font-size:11px;font-weight:400;letter-spacing:.06em;color:var(--dark);text-decoration:none;opacity:.7;}
 
+nav{padding:0 20px;}
+  .page-hero{padding:48px 20px 36px;}
+  .faq-layout{grid-template-columns:1fr;}
+  .faq-layout{grid-template-columns:1fr;}
+  .faq-nav{
+    position:sticky;top:52px;z-index:90;
+    height:auto;
+    display:flex;flex-direction:column;
+    overflow:visible;
+    border-right:none;border-bottom:.5px solid var(--border);
+    padding:6px 0;background:var(--bg);
+  }
+
 /* ── HERO ── */
 .page-hero{padding:72px 36px 48px;border-bottom:.5px solid var(--border);}
 .page-hero-label{font-size:10px;font-weight:400;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
@@ -101,10 +114,23 @@ footer{background:var(--dark);padding:52px 36px 32px;}
   nav{padding:0 20px;}
   .page-hero{padding:48px 20px 36px;}
   .faq-layout{grid-template-columns:1fr;}
-  .faq-nav{position:relative;top:0;height:auto;display:flex;flex-wrap:nowrap;overflow-x:auto;border-right:none;border-bottom:.5px solid var(--border);padding:0;}
-  .faq-nav::-webkit-scrollbar{display:none;}
-  .faq-nav-item{padding:14px 20px;border-left:none;border-bottom:1.5px solid transparent;white-space:nowrap;flex-shrink:0;}
-  .faq-nav-item.active{border-bottom-color:var(--dark);}
+  .faq-layout{grid-template-columns:1fr;}
+  .faq-nav{
+    position:sticky;top:52px;z-index:90;
+    height:auto;
+    display:flex;flex-direction:column;
+    overflow:visible;
+    border-right:none;border-bottom:.5px solid var(--border);
+    padding:6px 0;background:var(--bg);
+  }
+  .faq-nav-item{
+    padding:11px 20px;
+    border-left:1.5px solid transparent;
+    border-bottom:none;
+    white-space:normal;
+    font-size:12px;text-align:left;
+  }
+  .faq-nav-item.active{border-left-color:var(--dark);color:var(--dark);}
   .faq-content{padding:32px 20px 60px;}
   .about-grid{grid-template-columns:1fr;}
   .footer-index{grid-template-columns:repeat(2,1fr);}
