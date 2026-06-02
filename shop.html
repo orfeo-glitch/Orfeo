@@ -343,10 +343,10 @@ async function loadProducts(){
 
   if(db?.settings){
     const s=db.settings;
-    if(s.email&&s.email!=='#'){const el=document.getElementById('lnk-email');el.href='mailto:'+s.email;el.textContent=s.email;}
-    if(s.instagram&&s.instagram!=='#')document.getElementById('lnk-ig').href=s.instagram;
-    if(s.tiktok&&s.tiktok!=='#')document.getElementById('lnk-tk').href=s.tiktok;
-    if(s.whatsapp&&s.whatsapp!=='#')document.getElementById('lnk-wa').href='https://wa.me/'+s.whatsapp.replace(/\D/g,'');
+    if(s.email&&s.email!=='#'){const el=document.getElementById('lnk-email');if(el){el.href='mailto:'+s.email;el.textContent=s.email;}}
+    if(s.instagram&&s.instagram!=='#'){const el=document.getElementById('lnk-ig');if(el)el.href=s.instagram;}
+    if(s.tiktok&&s.tiktok!=='#'){const el=document.getElementById('lnk-tk');if(el)el.href=s.tiktok;}
+    if(s.whatsapp&&s.whatsapp!=='#'){const el=document.getElementById('lnk-wa');if(el)el.href='https://wa.me/'+s.whatsapp.replace(/\D/g,'');}
   }
 
   if(!db||!db.products||db.products.length===0){allProducts=[];renderError(source);return;}
